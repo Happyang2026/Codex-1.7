@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  Codex简体中文汉化补丁（v2.0：新增元素级整段翻译，处理 React 用 <strong>/<em> 等把文本切碎导致整段词条匹配失败的场景；如建议项 "Create a **new** document"）
+// @version      2.1
+// @description  Codex简体中文汉化补丁（v2.1：批量补项目页/定时任务/插件面板/创建项目/侧边栏/详情面板等 UI 标签与筛选器，约 70 条新增）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -91,6 +91,84 @@
     ["Figure out next steps after comparing options", "比较方案后想好下一步"],
     ["Figure out next steps for an upcoming meeting", "为即将到来的会议想好下一步"],
     ["Figure out next steps for a strategy or project", "为战略或项目想好下一步"],
+
+    // v2.1 批量补：项目页 / 定时任务 / 插件面板 / 创建项目 / 侧边栏 / 详情面板
+    // 项目页
+    ["Search projects", "搜索项目"],
+    ["Search plugins", "搜索插件"],
+    ["Type to search for files", "输入关键词搜索文件"],
+    ["Name", "名称"],
+    ["Updated", "最近更新"],
+    ["Edit project", "编辑项目"],
+    ["Add source", "添加源文件夹"],
+    ["Archive chats", "归档对话"],
+    ["Forward", "前进"],
+    // 定时任务
+    ["Scheduled tasks", "定时任务"],
+    ["Ask ChatGPT to schedule tasks, set reminders, or monitor for updates", "让 ChatGPT 安排定时任务、设置提醒或监控更新"],
+    ["Search scheduled tasks", "搜索定时任务"],
+    ["Suggestions", "建议"],
+    ["Daily brief", "每日简报"],
+    ["Weekly review", "每周回顾"],
+    ["Follow-up monitor", "后续跟进"],
+    ["Weekdays at 8:00", "工作日 8:00"],
+    ["Weekdays at 9:00", "工作日 9:00"],
+    ["Fridays at 16:00", "周五 16:00"],
+    ["Start each weekday with a summary of your calendar, unread email, and priorities", "每个工作日以日程、未读邮件和优先事项摘要开始"],
+    ["Turn your recent work into a concise status update every Friday", "每周五将你近期工作整理为简明状态更新"],
+    ["Review recent email and calendar activity and flag anything that needs your attention", "查看近期邮件和日历，标记需要关注的事项"],
+    ["No scheduled tasks found", "暂无定时任务"],
+    ["Give me a morning brief with what's on my calendar, important unread emails, and anything that needs my attention today.", "给我一份今日晨间简报，包括今日日程、重要的未读邮件和需要关注的事项。"],
+    ["Review what I worked on this week and draft a short status update.", "回顾本周工作并起草一份简短的状态更新。"],
+    // 筛选/详情
+    ["All", "全部"],
+    ["Active", "活跃"],
+    ["Paused", "已暂停"],
+    ["Create", "创建"],
+    ["Details", "详情"],
+    ["Project", "项目"],
+    ["None", "无"],
+    ["Reasoning", "推理"],
+    ["Frequency", "频率"],
+    ["Repeat", "重复"],
+    ["Weekly", "每周"],
+    ["Weekdays", "工作日"],
+    ["On", "于"],
+    ["Friday", "周五"],
+    ["At", "时间"],
+    ["All runs", "每次运行"],
+    ["Next run", "下次运行"],
+    // 创建项目对话框
+    ["Project type", "项目类型"],
+    ["Cloud", "云端"],
+    ["Local", "本地"],
+    ["Work through ideas and tasks without setup", "无需设置，直接处理想法和任务"],
+    ["Edit, run, and test files on your computer", "在你的电脑上编辑、运行并测试文件"],
+    ["Next", "下一步"],
+    // 侧边栏
+    ["Pinned", "已固定"],
+    ["Automate", "自动化"],
+    ["Explore", "探索"],
+    ["Run image generation request", "运行图片生成请求"],
+    ["Organize sidebar", "组织侧边栏"],
+    ["By project", "按项目"],
+    ["In one list", "列表展示"],
+    // 插件面板
+    ["Public", "公开"],
+    ["Personal", "个人"],
+    ["Install", "安装"],
+    // 插件分类
+    ["Business & Operations", "商业与运营"],
+    ["Communication", "通讯"],
+    ["Creativity", "创意"],
+    ["Data & Analytics", "数据分析"],
+    ["Developer Tools", "开发者工具"],
+    ["Education & Research", "教育与研究"],
+    ["Finance", "金融"],
+    ["Other", "其他"],
+    ["Productivity", "效率"],
+    ["Travel", "旅行"],
+    ["Security", "安全"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
