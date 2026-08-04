@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v1.9** — 修 translateAttributes 漏遍后代元素的 bug（walk 新增 SHOW_ELEMENT 遍历）；输入框 placeholder、tooltip title、aria-label 等现在任意层级都生效
 - **v1.8** — 补聊天输入框「Figure out next steps ...」系列建议（想好下一步）
 - **v1.7** — 发布版（与本地 v1.6 功能一致，版本号统一为 1.7）
 - v1.6 — 修上下文识别（同时认 `effort` 与已翻译的「推理强度」标记）+ 省略号/空白归一化
