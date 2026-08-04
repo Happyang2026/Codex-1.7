@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.3
-// @description  Codex简体中文汉化补丁（v2.3：批量补 Configuration 全部面板（Approval policy/Sandbox/Web search/Output detail/Reasoning summary + 子项）、Personalization（Custom instructions/Memory）、Pets 页、Browser 页、Computer use / Hooks / Git / Environments / Worktrees 页、"What should we build?" 提示卡、Plugins marketplace 子页等约 110 条；键盘快捷键页因 100+ 项太多本轮跳过）
+// @version      2.4
+// @description  Codex简体中文汉化补丁（v2.4：补 Sort chats by 下拉 / Quit ChatGPT 等 5 条；提醒：v2.3 加的"What should we build?"需重启才生效）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -381,6 +381,13 @@
     ["Manage plugins, skills, and MCPs", "管理插件、技能与 MCP"],
     ["MCPs", "MCP"],
     ["Search marketplaces", "搜索市场"],
+
+    // v2.4 补：Sort chats by 下拉 + Quit ChatGPT
+    ["Sort chats by", "排序方式"],
+    ["Priority", "优先级"],
+    ["Last updated", "最近更新"],
+    ["Manual order", "手动排序"],
+    ["Quit ChatGPT", "退出 ChatGPT"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
