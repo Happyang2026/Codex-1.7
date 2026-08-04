@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.5
-// @description  Codex简体中文汉化补丁（v2.5：键盘快捷键页全部动作名+描述，约 160 条：对话/导航/标签页/面板/Git与PR/Composer/复制编辑/浏览器/技能/杂项）
+// @version      2.6
+// @description  Codex简体中文汉化补丁（v2.6：补 Unpin project/Open in Explorer/工作模式描述/ChatGPT is up to date/OK 等 6 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -557,6 +557,14 @@
     ["Open ChatGPT settings", "打开 ChatGPT 设置"],
     ["Customize keyboard shortcuts", "自定义键盘快捷键"],
     ["Sign out of ChatGPT", "退出 ChatGPT 登录"],
+
+    // v2.6 补漏：项目右键菜单 + 工作模式描述 + 更新提示 + OK
+    ["Unpin project", "取消置顶项目"],
+    ["Open in Explorer", "在资源管理器中打开"],
+    ["Create, learn, and explore", "创建、学习与探索"],
+    ["Build, debug, and ship", "构建、调试与发布"],
+    ["ChatGPT is up to date.", "ChatGPT 是最新版本。"],
+    ["OK", "确定"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
