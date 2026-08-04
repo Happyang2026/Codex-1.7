@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.3** — 批量补 Configuration 全部面板 + 子项、Personalization、Pets、Browser、Computer use、Hooks、Git、Environments、Worktrees、Composer 提示卡、Plugins marketplace 子页等约 130 条新增（总 419）；键盘快捷键页（100+ 项）本轮跳过
 - **v2.2** — 补 Skills 页 + 设置页全部面板 + 通知 + Composer + 设置侧边栏等约 52 条；norm() 新增弯引号归一化（兼容 "it's"/"it’s" 等）
 - **v2.1** — 批量补项目页 / 定时任务 / 插件面板 / 创建项目 / 侧边栏 / 详情面板 等 UI 标签与筛选器（约 69 条新增，总 237）
 - **v2.0** — 新增元素级整段翻译（处理 React 用 `<strong>`/`<em>` 等把文本切碎的盲区，如建议项「Create a **new** document」）
