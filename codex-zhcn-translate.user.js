@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      1.7
-// @description  Codex简体中文汉化补丁（v1.6：上下文识别同时认"effort"/"推理强度"两种标记 + 省略号归一化，让 Light→低 / Search plugins...→搜索插件…真正生效）
+// @version      1.8
+// @description  Codex简体中文汉化补丁（v1.8：补聊天输入框"Figure out next steps ..."系列建议）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -84,6 +84,13 @@
     ["High", "高"],
     ["Extra High", "极高"],
     ["Low", "低"],
+
+    // v1.8 新增：聊天输入框"Figure out next steps"系列建议
+    ["Figure out next steps", "想好下一步"],
+    ["Figure out next steps for a topic I'm exploring", "为正在探索的课题想好下一步"],
+    ["Figure out next steps after comparing options", "比较方案后想好下一步"],
+    ["Figure out next steps for an upcoming meeting", "为即将到来的会议想好下一步"],
+    ["Figure out next steps for a strategy or project", "为战略或项目想好下一步"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
