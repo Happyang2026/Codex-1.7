@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9
-// @description  Codex简体中文汉化补丁（v2.9：补 Create plugin/Add marketplace/Pin chat/Mark as unread/Continue in new worktree/Add scheduled task... 等 6 条）
+// @version      2.9.1
+// @description  Codex简体中文汉化补丁（v2.9.1：On 译为「开」+ 上下文识别——频率设置上下文（On Friday/Weekdays）仍译「于」，开关按钮译「开」）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -133,7 +133,7 @@
     ["Repeat", "重复"],
     ["Weekly", "每周"],
     ["Weekdays", "工作日"],
-    ["On", "于"],
+    ["On", "开"],
     ["Friday", "周五"],
     ["At", "时间"],
     ["All runs", "每次运行"],
@@ -584,7 +584,6 @@
     ["Reduce motion", "减少动效"],
     ["Reduce animations or match your system", "减少动画或跟随系统设置"],
     ["Off", "关"],
-    ["On", "开"],
     ["UI font size", "界面字体大小"],
     ["Adjust the base size used for the ChatGPT UI", "调整 ChatGPT UI 使用的基础字号"],
     ["Code font size", "代码字体大小"],
@@ -741,6 +740,20 @@
         if (ctx.toLowerCase().indexOf("effort") !== -1 || ctx.indexOf("推理强度") !== -1) return "低";
         cur = cur.parentElement;
         depth++;
+      }
+    }
+    // 上下文覆盖：On 在频率设置（On Friday / On Weekdays）中译"于"，开关按钮译"开"
+    if (t === "on" && host) {
+      var cur2 = host, depth2 = 0;
+      while (cur2 && depth2 < 6) {
+        var ctx2 = cur2.textContent || "";
+        var l2 = ctx2.toLowerCase();
+        if (l2.indexOf("monday") !== -1 || l2.indexOf("tuesday") !== -1 || l2.indexOf("wednesday") !== -1 ||
+            l2.indexOf("thursday") !== -1 || l2.indexOf("friday") !== -1 || l2.indexOf("saturday") !== -1 ||
+            l2.indexOf("sunday") !== -1 || l2.indexOf("weekday") !== -1 ||
+            ctx2.indexOf("周五") !== -1 || ctx2.indexOf("周一") !== -1) return "于";
+        cur2 = cur2.parentElement;
+        depth2++;
       }
     }
     for (var i = 0; i < DICT.length; i++) {
