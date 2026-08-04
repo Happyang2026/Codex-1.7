@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      1.9
-// @description  Codex简体中文汉化补丁（v1.9：修 translateAttributes 漏遍后代元素 bug——walk() 新增 SHOW_ELEMENT walker，现在 placeholder/title/aria-label/alt 在任意层级元素上都生效）
+// @version      2.0
+// @description  Codex简体中文汉化补丁（v2.0：新增元素级整段翻译，处理 React 用 <strong>/<em> 等把文本切碎导致整段词条匹配失败的场景；如建议项 "Create a **new** document"）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -284,7 +284,42 @@
       }
     });
     var e;
-    while ((e = ew.nextNode())) translateAttributes(e);
+    while ((e = ew.nextNode())) {
+      translateAttributes(e);
+      // 元素级整段翻译（v2.0）：处理 React 用 <strong>/<em> 等内联元素把整段文本切碎的场景
+      translateElementIfExact(e);
+    }
+  }
+
+  // v2.0：元素级整段翻译 —— 当元素的 textContent 整体等于某个词条、但被内联子节点切碎时，
+  // 整段替换为中文。会丢失粗体/斜体等内联格式（被替换为纯文本），但保证翻译生效。
+  var INLINE_TAGS = {
+    SPAN: 1, B: 1, STRONG: 1, I: 1, EM: 1, U: 1, MARK: 1,
+    SUB: 1, SUP: 1, BR: 1, CODE: 1, SMALL: 1, BIG: 1, TT: 1,
+    CITE: 1, Q: 1, DFN: 1, ABBR: 1, TIME: 1, FONT: 1, S: 1,
+    STRIKE: 1, DEL: 1, INS: 1, KBD: 1, SAMP: 1, VAR: 1, WBR: 1
+  };
+  var SKIP_TAGS_FOR_ELEMENT = {
+    INPUT: 1, TEXTAREA: 1, SELECT: 1, SCRIPT: 1, STYLE: 1,
+    NOSCRIPT: 1, CODE: 1, PRE: 1
+  };
+  function translateElementIfExact(el) {
+    if (!el || !el.tagName) return;
+    var tag = el.tagName.toUpperCase();
+    if (SKIP_TAGS_FOR_ELEMENT[tag]) return;
+    var fullText = el.textContent || "";
+    if (!fullText) return;
+    var zh = lookup(fullText);
+    if (zh === null) return;
+    if (norm(fullText) === zh) return;
+    // 元素必须只含文本/内联子节点，否则会破坏布局（图标/按钮/列表等）
+    for (var c = el.firstChild; c; c = c.nextSibling) {
+      if (c.nodeType === 1) {
+        var ct = (c.tagName || "").toUpperCase();
+        if (!INLINE_TAGS[ct]) return;
+      }
+    }
+    el.textContent = zh;
   }
 
   function start() {
