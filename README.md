@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.8** — 补漏：外观页（Light theme/Dark theme/Import/Copy theme/Accent/Background/Foreground）+ Preferences（Use pointer cursors/Reduce motion/Off/UI font size/Code font size/Diff markers 等），约 19 条
 - **v2.7** — 补漏：项目区空状态 No projects → 暂无项目
 - **v2.6** — 补漏：项目右键菜单（Unpin project / Open in Explorer）+ 工作模式描述（Create, learn, and explore / Build, debug, and ship）+ 更新提示（ChatGPT is up to date.）+ OK 按钮，6 条
 - **v2.5** — 键盘快捷键页全部动作名+描述（约 160 条：对话/导航/标签页/面板/Git与PR/Composer/复制编辑/浏览器/技能/杂项）；Unassigned → 未分配（总 580+）
