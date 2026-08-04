@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.7
-// @description  Codex简体中文汉化补丁（v2.7：补 No projects 项目空状态 1 条）
+// @version      2.8
+// @description  Codex简体中文汉化补丁（v2.8：补 外观页 Light/Dark theme/Import/Copy theme/Accent/Background/Foreground + Preferences 页 Use pointer cursors/Reduce motion/Off/UI font size/Code font size/Diff markers 等约 19 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -568,6 +568,29 @@
 
     // v2.7 补漏：项目区空状态
     ["No projects", "暂无项目"],
+
+    // v2.8 外观页 + Preferences
+    // 外观页
+    ["Light theme", "浅色主题"],
+    ["Dark theme", "深色主题"],
+    ["Import", "导入"],
+    ["Copy theme", "复制主题"],
+    ["Accent", "强调色"],
+    ["Background", "背景"],
+    ["Foreground", "前景"],
+    // Preferences
+    ["Use pointer cursors", "使用指针光标"],
+    ["Change the cursor to a pointer when hovering over interactive elements", "悬停在交互元素上时光标变为指针"],
+    ["Reduce motion", "减少动效"],
+    ["Reduce animations or match your system", "减少动画或跟随系统设置"],
+    ["Off", "关"],
+    ["On", "开"],
+    ["UI font size", "界面字体大小"],
+    ["Adjust the base size used for the ChatGPT UI", "调整 ChatGPT UI 使用的基础字号"],
+    ["Code font size", "代码字体大小"],
+    ["Adjust the base size used for code across chats and diffs", "调整对话与差异中代码使用的基础字号"],
+    ["Diff markers", "差异标记"],
+    ["Show changes using colors or +/- markers", "使用颜色或 +/- 标记显示变更"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
