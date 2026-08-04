@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.8
-// @description  Codex简体中文汉化补丁（v2.8：补 外观页 Light/Dark theme/Import/Copy theme/Accent/Background/Foreground + Preferences 页 Use pointer cursors/Reduce motion/Off/UI font size/Code font size/Diff markers 等约 19 条）
+// @version      2.9
+// @description  Codex简体中文汉化补丁（v2.9：补 Create plugin/Add marketplace/Pin chat/Mark as unread/Continue in new worktree/Add scheduled task... 等 6 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -591,6 +591,14 @@
     ["Adjust the base size used for code across chats and diffs", "调整对话与差异中代码使用的基础字号"],
     ["Diff markers", "差异标记"],
     ["Show changes using colors or +/- markers", "使用颜色或 +/- 标记显示变更"],
+
+    // v2.9 补漏：创建插件下拉 + 聊天右键菜单
+    ["Create plugin", "创建插件"],
+    ["Add marketplace", "添加市场"],
+    ["Pin chat", "置顶对话"],
+    ["Mark as unread", "标记为未读"],
+    ["Continue in new worktree", "在新工作树中继续"],
+    ["Add scheduled task...", "添加定时任务..."],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
