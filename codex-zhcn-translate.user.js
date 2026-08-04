@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.1
-// @description  Codex简体中文汉化补丁（v2.1：批量补项目页/定时任务/插件面板/创建项目/侧边栏/详情面板等 UI 标签与筛选器，约 70 条新增）
+// @version      2.2
+// @description  Codex简体中文汉化补丁（v2.2：补 Skills 页 + 设置页全部面板 + 通知 + Composer + 设置侧边栏等约 60 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -170,6 +170,68 @@
     ["Travel", "旅行"],
     ["Security", "安全"],
 
+    // v2.2 批量补：Skills / 设置 / 通知 / Composer / 设置侧边栏
+    // Skills 页
+    ["Skills", "技能"],
+    ["Extend ChatGPT with task-specific skills", "用任务专属技能扩展 ChatGPT"],
+    ["Search skills", "搜索技能"],
+    ["Installed", "已安装"],
+    // 设置侧边栏 - 分组标题与项
+    ["Personal", "个人"],
+    ["Configuration", "配置"],
+    ["Personalization", "个性化"],
+    ["Pets", "宠物"],
+    ["Integrations", "集成"],
+    ["Computer use", "电脑操控"],
+    ["Coding", "编程"],
+    ["Hooks", "钩子"],
+    ["Environments", "环境"],
+    ["Archived", "已归档"],
+    ["Back to app", "返回应用"],
+    ["Hide pet", "隐藏宠物"],
+    // Permissions 区域
+    ["Permissions", "权限"],
+    ["Default permissions", "默认权限"],
+    ["Full access", "完全访问权限"],
+    ["Learn more", "了解更多"],
+    ["about elevated risks", "关于更高风险"],
+    // 文件打开 / 终端
+    ["Default file open destination", "默认文件打开方式"],
+    ["Where files and folders open by default", "默认情况下文件和文件夹在哪里打开"],
+    ["Integrated terminal shell", "集成终端 Shell"],
+    ["Choose which shell opens in the integrated terminal.", "选择在集成终端中使用的 Shell。"],
+    ["Default app", "默认应用"],
+    ["File Explorer", "文件资源管理器"],
+    ["Terminal", "终端"],
+    ["Command Prompt", "命令提示符"],
+    // 底部面板与导入
+    ["Language for the app UI", "应用界面语言"],
+    ["Bottom panel", "底部面板"],
+    ["Show the bottom panel control in the app header", "在应用标题栏显示底部面板控件"],
+    ["Import work from other AI apps", "从其他 AI 应用导入工作"],
+    ["Bring over your setup, projects, and recent chats", "导入设置、项目和最近的对话"],
+    ["No data detected", "未检测到数据"],
+    // 开源许可
+    ["Open source licenses", "开源许可证"],
+    ["Third-party notices for bundled dependencies", "捆绑依赖的第三方声明"],
+    // Composer
+    ["Show context window usage", "显示上下文窗口使用量"],
+    ["Send shortcut", "发送快捷键"],
+    ["Choose when Enter sends a prompt or inserts a new line", "选择按 Enter 时发送消息或换行"],
+    ["Follow-up behavior", "后续跟进行为"],
+    ["Queue", "排队"],
+    ["Steer", "操控"],
+    // 通知
+    ["Turn completion notifications", "开启完成通知"],
+    ["Set when ChatGPT alerts you that it's finished", "设置 ChatGPT 何时提醒你已完成"],
+    ["Only when unfocused", "仅当未聚焦时"],
+    ["Never", "从不"],
+    ["Always", "始终"],
+    ["Enable permission notifications", "启用权限通知"],
+    ["Show alerts when notification permissions are required", "需要通知权限时显示提醒"],
+    ["Enable question notifications", "启用提问通知"],
+    ["Show alerts when input is needed to continue", "需要输入才能继续时显示提醒"],
+
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
     ["Settings & Privacy", "设置与隐私"],
@@ -287,6 +349,7 @@
 
   function norm(s) {
     return String(s)
+      .replace(/[\u2019\u2018\u02BC]/g, "'") // 弯引号 → 直引号（I'm / it's 等会用到）
       .replace(/\s*\.{3,}\s*|\s*…\s*/g, "…") // 省略号（含前后空白）统一折叠为单个 Unicode …
       .replace(/\s+/g, " ")
       .trim();
