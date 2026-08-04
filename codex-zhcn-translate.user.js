@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  Codex简体中文汉化补丁（v2.2：补 Skills 页 + 设置页全部面板 + 通知 + Composer + 设置侧边栏等约 60 条）
+// @version      2.3
+// @description  Codex简体中文汉化补丁（v2.3：批量补 Configuration 全部面板（Approval policy/Sandbox/Web search/Output detail/Reasoning summary + 子项）、Personalization（Custom instructions/Memory）、Pets 页、Browser 页、Computer use / Hooks / Git / Environments / Worktrees 页、"What should we build?" 提示卡、Plugins marketplace 子页等约 110 条；键盘快捷键页因 100+ 项太多本轮跳过）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -231,6 +231,156 @@
     ["Show alerts when notification permissions are required", "需要通知权限时显示提醒"],
     ["Enable question notifications", "启用提问通知"],
     ["Show alerts when input is needed to continue", "需要输入才能继续时显示提醒"],
+
+    // v2.3 批量补：Configuration / Personalization / Pets / Browser / Computer use / Hooks / Git / Environments / Worktrees / Composer / Codex++ 菜单 / Plugins 子页
+    // Configuration - 顶部
+    ["Configure permissions, web access, and agent responses for new chats", "为新对话配置权限、网络访问与代理响应"],
+    ["Agent defaults", "代理默认设置"],
+    ["User config", "用户配置"],
+    ["Open config.toml", "打开 config.toml"],
+    // Approval policy
+    ["Approval policy", "审批策略"],
+    ["Choose when ChatGPT asks for approval", "选择 ChatGPT 何时请求审批"],
+    ["On request", "按需"],
+    ["Untrusted", "不信任"],
+    ["Always ask before taking action", "执行操作前总是询问"],
+    ["Ask when escalation is requested", "需要升级权限时再询问"],
+    ["Never ask for approval", "从不请求审批"],
+    ["Blocked actions fail instead of requesting approval", "阻断的操作直接失败，不会请求审批"],
+    // Sandbox settings
+    ["Sandbox settings", "沙箱设置"],
+    ["Choose how much ChatGPT can do when running commands", "选择 ChatGPT 执行命令时的权限范围"],
+    ["Read only", "只读"],
+    ["Can read files, but cannot edit them", "可读取文件，但不可编辑"],
+    ["Workspace write", "工作区可写"],
+    ["Can edit files, but only in this workspace", "可编辑文件，但仅限于此工作区"],
+    // Web search
+    ["Web search", "联网搜索"],
+    ["Choose how ChatGPT accesses the web", "选择 ChatGPT 访问网络的方式"],
+    ["Disabled", "已禁用"],
+    ["Don't allow web search", "不允许联网搜索"],
+    ["Use OpenAI's maintained search index", "使用 OpenAI 维护的搜索索引"],
+    ["Cached", "已缓存"],
+    ["Indexed", "索引模式"],
+    ["Allow indexed external web access", "允许索引式的外部网络访问"],
+    ["Live", "实时模式"],
+    ["Allow unrestricted, current web access", "允许无限制的实时网络访问"],
+    // Output detail
+    ["Output detail", "输出详细度"],
+    ["Choose how much detail ChatGPT includes in responses", "选择 ChatGPT 在回复中包含的细节量"],
+    ["Model default", "模型默认"],
+    ["Keep responses concise", "回复保持简洁"],
+    ["Balance detail and brevity", "在详细与简洁间平衡"],
+    ["Include more detail in responses", "在回复中包含更多细节"],
+    // Reasoning summary
+    ["Reasoning summary", "推理摘要"],
+    ["Choose how ChatGPT summarizes its reasoning", "选择 ChatGPT 如何摘要其推理"],
+    ["Auto", "自动"],
+    ["Let the model choose the summary detail", "由模型选择摘要详细度"],
+    ["Concise", "简洁"],
+    ["Show a brief reasoning summary", "显示简短推理摘要"],
+    ["Detailed", "详细"],
+    ["Show a more detailed reasoning summary", "显示更详细的推理摘要"],
+    ["None", "无"],
+    ["Don't show reasoning summaries", "不显示推理摘要"],
+    // Personalization
+    ["Custom instructions", "自定义指令"],
+    ["Give ChatGPT extra instructions and context for all chats on this host.", "为这台主机上的所有对话提供额外指令与上下文。"],
+    ["Add your custom instructions...", "添加你的自定义指令..."],
+    ["Memory", "记忆"],
+    ["Configure how local memories are collected, retained, and consolidated on this computer", "配置本地记忆的收集、保留与合并方式"],
+    ["Enable local memories", "启用本地记忆"],
+    ["Create memories from chats on this computer and use them to personalize future chats on this computer", "基于本机的对话创建记忆，并用于个性化未来的对话"],
+    ["Allow local memory generation from tool-assisted chats", "允许从工具辅助对话生成记忆"],
+    ["Generate memories from chats that used MCP tools or web search", "基于使用 MCP 工具或联网搜索的对话生成记忆"],
+    ["Delete local memories", "删除本地记忆"],
+    ["Delete all memories stored locally on this computer", "删除本机存储的所有记忆"],
+    // Pets 页
+    ["Pick a pet", "选择宠物"],
+    ["Pets manage threads and surface what needs attention", "宠物管理线程并提示需要关注的事项"],
+    ["Tuck Away Pet", "收起宠物"],
+    ["Custom pets", "自定义宠物"],
+    ["Open folder", "打开文件夹"],
+    ["Selected", "已选择"],
+    // Codex++ 托盘菜单
+    ["Show pet", "显示宠物"],
+    // Composer 提示卡
+    ["What should we build?", "今天要构建什么？"],
+    ["Explore and understand code", "探索并理解代码"],
+    ["Build a new feature, app, or tool", "构建新功能、应用或工具"],
+    ["Review code and suggest changes", "审查代码并提出修改建议"],
+    ["Fix issues and failures", "修复问题与故障"],
+    // Browser 页
+    ["Disabled by your organization or unavailable in your region", "您的组织已禁用或该地区不可用"],
+    ["Local URL open destination", "本地 URL 打开方式"],
+    ["Where local development sites open by default", "默认情况下本地开发站点在哪里打开"],
+    ["Default browser", "默认浏览器"],
+    ["Browsing data", "浏览数据"],
+    ["Clear browsing history, site data, cache, and download history from the in-app browser", "清除内置浏览器的浏览历史、网站数据、缓存和下载历史"],
+    ["Clear all browsing data", "清除所有浏览数据"],
+    ["Cookies", "Cookie"],
+    ["Delete cookies", "删除 Cookie"],
+    ["Site data", "网站数据"],
+    ["Delete site data", "删除网站数据"],
+    ["Cached images and files", "缓存的图片与文件"],
+    ["Delete cached images and files", "删除缓存的图片与文件"],
+    ["Download history", "下载历史"],
+    ["Delete download history", "删除下载历史"],
+    ["Annotation screenshots", "标注截图"],
+    ["Screenshots help ChatGPT better understand and address comments, but increase plan usage", "截图有助于 ChatGPT 更好地理解与处理批注，但会增加用量"],
+    ["Always include", "总是包含"],
+    ["Only on drag selection", "仅在拖动选择时"],
+    ["Autofill and passwords", "自动填充与密码"],
+    ["Password manager", "密码管理器"],
+    ["Add, delete, and edit saved passwords", "添加、删除与编辑已保存的密码"],
+    ["Contact info", "联系信息"],
+    ["Add, delete, and edit saved addresses, phone numbers, and email addresses", "添加、删除与编辑已保存的地址、电话和邮箱"],
+    ["Site settings", "网站设置"],
+    ["Control camera and microphone permissions in the built-in browser", "控制内置浏览器的摄像头与麦克风权限"],
+    ["Manage", "管理"],
+    // Computer use 页
+    ["Manage how ChatGPT uses other applications on your computer", "管理 ChatGPT 如何使用你电脑上的其他应用"],
+    ["Control", "控制"],
+    // Hooks 页
+    ["Manage lifecycle hooks from config and enabled plugins.", "管理来自配置和已启用插件的生命周期钩子。"],
+    ["No hooks found", "未找到钩子"],
+    ["Configured hooks will appear here", "配置后的钩子将出现在此"],
+    // Git 页
+    ["Branch prefix", "分支前缀"],
+    ["Prefix used when ChatGPT creates new branches", "ChatGPT 创建新分支时使用的前缀"],
+    ["Always force push", "总是强制推送"],
+    ["Use --force-with-lease when pushing from ChatGPT", "从 ChatGPT 推送时使用 --force-with-lease"],
+    ["Create draft pull requests", "创建草稿拉取请求"],
+    ["Use draft pull requests by default when creating PRs from ChatGPT", "从 ChatGPT 创建 PR 时默认使用草稿"],
+    ["Review delivery", "审查交付方式"],
+    ["Start /review in the current chat when possible or launch a separate review chat", "尽可能在当前对话发起 /review，或启动独立的审查对话"],
+    ["Inline", "行内"],
+    ["Detached", "分离"],
+    ["Commit instructions", "提交说明"],
+    ["Added to commit message generation prompts", "已加入 commit 信息生成提示词"],
+    ["Add commit message guidance...", "添加 commit 信息指引..."],
+    ["Pull request instructions", "拉取请求说明"],
+    ["Added to PR title/description generation prompts", "已加入 PR 标题/描述生成提示词"],
+    ["Add pull request guidance...", "添加 PR 指引..."],
+    // Environments 页
+    ["Local environments tell ChatGPT how to set up worktrees for a project.", "本地环境告诉 ChatGPT 如何为项目设置 worktree。"],
+    ["Select a project", "选择项目"],
+    ["Add project", "添加项目"],
+    // Worktrees 页
+    ["Worktree root", "Worktree 根目录"],
+    ["Directory where ChatGPT creates managed worktrees; leave blank to use the default location", "ChatGPT 创建托管 worktree 的目录；留空使用默认位置"],
+    ["Default", "默认"],
+    ["Automatically delete old worktrees", "自动删除旧的 worktree"],
+    ["Recommended for most users. Turn this off only if you want to manage old worktrees and disk usage yourself.", "推荐多数用户开启。仅当你想自行管理旧 worktree 与磁盘占用时才关闭。"],
+    ["Auto-delete limit", "自动删除上限"],
+    ["Number of managed worktrees to keep before older ones are pruned automatically. ChatGPT snapshots worktrees before deleting, so pruned worktrees should always be restorable.", "自动修剪前保留的托管 worktree 数量。ChatGPT 删除前会快照 worktree，因此被修剪的 worktree 通常都可恢复。"],
+    ["Fetching worktree details...", "正在获取 worktree 详情..."],
+    // Archived chats
+    ["Loading archived chats...", "正在加载已归档对话..."],
+    // Plugins 子页（MCPs / Marketplace）
+    ["Manage plugins, skills, and MCPs", "管理插件、技能与 MCP"],
+    ["MCPs", "MCP"],
+    ["Search marketplaces", "搜索市场"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
