@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      1.8
-// @description  Codex简体中文汉化补丁（v1.8：补聊天输入框"Figure out next steps ..."系列建议）
+// @version      1.9
+// @description  Codex简体中文汉化补丁（v1.9：修 translateAttributes 漏遍后代元素 bug——walk() 新增 SHOW_ELEMENT walker，现在 placeholder/title/aria-label/alt 在任意层级元素上都生效）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -272,9 +272,19 @@
       if (isProtected(root)) return;
       translateAttributes(root);
     }
-    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    // 文本节点
+    var tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
     var t;
-    while ((t = walker.nextNode())) translateTextNode(t);
+    while ((t = tw.nextNode())) translateTextNode(t);
+    // 元素节点：翻译 placeholder / title / aria-label / alt 等属性
+    // 修复 v1.3 以来 translateAttributes 只在根上调用、对后代元素无效的 bug
+    var ew = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: function (el) {
+        return el && el.nodeType === 1 && !isProtected(el) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    var e;
+    while ((e = ew.nextNode())) translateAttributes(e);
   }
 
   function start() {
