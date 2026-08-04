@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.6
-// @description  Codex简体中文汉化补丁（v2.6：补 Unpin project/Open in Explorer/工作模式描述/ChatGPT is up to date/OK 等 6 条）
+// @version      2.7
+// @description  Codex简体中文汉化补丁（v2.7：补 No projects 项目空状态 1 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -565,6 +565,9 @@
     ["Build, debug, and ship", "构建、调试与发布"],
     ["ChatGPT is up to date.", "ChatGPT 是最新版本。"],
     ["OK", "确定"],
+
+    // v2.7 补漏：项目区空状态
+    ["No projects", "暂无项目"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
