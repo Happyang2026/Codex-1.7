@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.1
-// @description  Codex简体中文汉化补丁（v2.9.1：On 译为「开」+ 上下文识别——频率设置上下文（On Friday/Weekdays）仍译「于」，开关按钮译「开」）
+// @version      2.9.2
+// @description  Codex简体中文汉化补丁（v2.9.2：补 Ask for approval / custom / ^ + Enter for multiline prompts / ^ + Enter always 等 4 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -598,6 +598,12 @@
     ["Mark as unread", "标记为未读"],
     ["Continue in new worktree", "在新工作树中继续"],
     ["Add scheduled task...", "添加定时任务..."],
+
+    // v2.9.2 补漏：Ask for approval / custom / Send shortcut 下拉子项
+    ["Ask for approval", "请求审批"],
+    ["custom", "自定义"],
+    ["^ + Enter for multiline prompts", "^ + Enter 用于多行提示"],
+    ["^ + Enter always", "^ + Enter 总是"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
