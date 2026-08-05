@@ -146,7 +146,7 @@
     ["Edit, run, and test files on your computer", "在你的电脑上编辑、运行并测试文件"],
     ["Next", "下一步"],
     // 侧边栏
-    ["Pinned", "已固定"],
+    ["Pinned", "已安排"],
     ["Automate", "自动化"],
     ["Explore", "探索"],
     ["Run image generation request", "运行图片生成请求"],
