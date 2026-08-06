@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.10
-// @description  Codex简体中文汉化补丁（v2.9.10：补侧边栏聊天卡片标签 2 条——Runs on your computer/Scheduled task run）
+// @version      2.9.11
+// @description  Codex简体中文汉化补丁（v2.9.11：补插件市场/添加 MCP/Allow network access/Temporary chat 等 7 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -633,6 +633,15 @@
     // v2.9.10 补漏：侧边栏聊天卡片标签
     ["Runs on your computer", "在你的电脑上运行"],
     ["Scheduled task run", "定时任务运行"],
+
+    // v2.9.11 补漏：插件市场添加 + 网络访问 + 临时对话
+    ["Add plugin marketplace", "添加插件市场"],
+    ["Add a marketplace", "添加市场"],
+    ["Add MCP server", "添加 MCP 服务器"],
+    ["Allow network access", "允许网络访问"],
+    ["Allow network access when the sandbox is set to workspace write", "当沙箱设置为工作区可写时允许网络访问"],
+    ["Temporary chat", "临时对话"],
+    ["Start a chat that won't appear in history", "创建一个不会出现在历史记录中的对话"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
