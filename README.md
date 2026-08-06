@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.9.10** — 补漏：侧边栏聊天卡片标签（Runs on your computer → 在你的电脑上运行 / Scheduled task run → 定时任务运行），2 条
 - **v2.9.9** — 补漏：新建项目对话框 Output 分类标题 Outputs → 输出，1 条
 - **v2.9.8** — 补漏：Preferences 页标题 → 偏好设置 + 差异标记下拉选项 Color +/- markers → 颜色 +/- 标记，2 条
 - **v2.9.7** — 补漏：Composer Follow-up behavior 长描述（Queue follow-ups while ChatGPT runs or steer the current run. Press Ctrl+↩ to do the opposite for one message），1 条
