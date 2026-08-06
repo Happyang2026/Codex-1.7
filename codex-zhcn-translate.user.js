@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.3
-// @description  Codex简体中文汉化补丁（v2.9.3：补顶部 Create 下拉的 Create with Codex / Set up manually 2 条）
+// @version      2.9.4
+// @description  Codex简体中文汉化补丁（v2.9.4：新增动态模式正则兜底——"See X, Y, and N more"→查看更多插件、数字+plugins/skills→N 个插件/技能）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -769,6 +769,14 @@
     for (var i = 0; i < DICT.length; i++) {
       if (NORM_KEYS[i] === t) return DICT[i][1];
     }
+    // 动态模式兜底（v2.9.4）：带数字/品牌名的重复句式无法进词表，用正则翻译
+    var pt = norm(text);
+    var m1 = pt.match(/^see .+ and \d+ more$/i);
+    if (m1) return "查看更多插件";
+    var m2 = pt.match(/^(\d+) plugins?$/i);
+    if (m2) return m2[1] + " 个插件";
+    var m3 = pt.match(/^(\d+) skills?$/i);
+    if (m3) return m3[1] + " 个技能";
     return null;
   }
 
