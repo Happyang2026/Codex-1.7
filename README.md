@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.9.5** — 补漏：GitHub Pull Requests 视图（Pull requests → 拉取请求 / GitHub CLI setup required / GitHub CLI (gh) is not installed / Check again），4 条
 - **v2.9.4** — 新增动态模式正则兜底：「See X, Y, and N more」→ 查看更多插件、「N plugins/skills」→ N 个插件/技能
 - **v2.9.3** — 补漏：Codex++ 顶部「创建」下拉（Create with Codex → 使用 Codex 创建 / Set up manually → 手动设置），2 条
 - **v2.9.2** — 补漏：Ask for approval → 请求审批 / custom → 自定义 / Send shortcut 下拉子项（^ + Enter for multiline prompts / ^ + Enter always），共 4 条
