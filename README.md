@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.9.14** — 补漏：定时任务自动化输出卡片 4 条（Automation → 自动化 / Automation ID → 自动化 ID / Automation memory → 自动化记忆 / Last run → 上次运行）
 - **v2.9.13** — 补漏：Composer 建议卡 React split-text 独立片段 4 条（for a topic I'm exploring / after comparing options / for an upcoming meeting / for a strategy or project），处理整段词条被 React 拆成独立文本节点的情况
 - **v2.9.12** — 补漏：Composer 加号 → 请求审批下拉 4 条（How should ChatGPT actions be approved? / Always ask to edit external files and use the internet / Custom (config.toml) / Uses permissions defined in config.toml）
 - **v2.9.11** — 补漏：插件市场添加（Add plugin marketplace / Add a marketplace / Add MCP server）+ Allow network access（Allow network access + 完整描述）+ 临时对话（Temporary chat + 描述），7 条
