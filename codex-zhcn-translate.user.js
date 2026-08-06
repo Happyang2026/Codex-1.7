@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.12
-// @description  Codex简体中文汉化补丁（v2.9.12：补请求审批下拉 4 条——How should ChatGPT actions be approved?/Always ask to edit external files and use the internet/Custom (config.toml)/Uses permissions defined in config.toml）
+// @version      2.9.13
+// @description  Codex简体中文汉化补丁（v2.9.13：补建议卡 React split-text 独立片段 4 条——for a topic I'm exploring/after comparing options/for an upcoming meeting/for a strategy or project）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -648,6 +648,12 @@
     ["Always ask to edit external files and use the internet", "总是询问以编辑外部文件并使用网络"],
     ["Custom (config.toml)", "自定义（config.toml）"],
     ["Uses permissions defined in config.toml", "使用 config.toml 中定义的权限"],
+
+    // v2.9.13 补漏：Composer 建议卡"想好下一步"的下半段（被 React 拆成独立文本节点）
+    ["for a topic I'm exploring", "为正在探索的课题"],
+    ["after comparing options", "比较方案后"],
+    ["for an upcoming meeting", "为即将到来的会议"],
+    ["for a strategy or project", "为战略或项目"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
