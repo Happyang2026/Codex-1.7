@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.6
-// @description  Codex简体中文汉化补丁（v2.9.6：补 Preferences 偏好页底部面板区/插件区 3 条——Default terminal location/Choose where the terminal shortcut and environment actions open terminal tabs/Allow ChatGPT to use installed plugins；Composer 功能名保留英文不译）
+// @version      2.9.7
+// @description  Codex简体中文汉化补丁（v2.9.7：补 Composer/Follow-up behavior 长描述 1 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -619,6 +619,9 @@
     ["Default terminal location", "默认终端位置"],
     ["Choose where the terminal shortcut and environment actions open terminal tabs", "选择终端快捷键和环境操作打开终端标签的位置"],
     ["Allow ChatGPT to use installed plugins", "允许 ChatGPT 使用已安装插件"],
+
+    // v2.9.7 补漏：Composer Follow-up behavior 长描述
+    ["Queue follow-ups while ChatGPT runs or steer the current run. Press Ctrl+↩ to do the opposite for one message", "在 ChatGPT 运行期间排队后续跟进或操控当前任务。按 Ctrl+↩ 反转行为（仅本次消息）"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
