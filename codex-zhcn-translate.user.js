@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.13
-// @description  Codex简体中文汉化补丁（v2.9.13：补建议卡 React split-text 独立片段 4 条——for a topic I'm exploring/after comparing options/for an upcoming meeting/for a strategy or project）
+// @version      2.9.14
+// @description  Codex简体中文汉化补丁（v2.9.14：补定时任务自动化输出卡片 4 条——Automation/Automation ID/Automation memory/Last run）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -654,6 +654,12 @@
     ["after comparing options", "比较方案后"],
     ["for an upcoming meeting", "为即将到来的会议"],
     ["for a strategy or project", "为战略或项目"],
+
+    // v2.9.14 补漏：定时任务自动化输出卡片
+    ["Automation", "自动化"],
+    ["Automation ID", "自动化 ID"],
+    ["Automation memory", "自动化记忆"],
+    ["Last run", "上次运行"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
