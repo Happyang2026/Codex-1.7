@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.9.6** — 补漏：偏好设置底部面板区（Default terminal location / Choose where the terminal shortcut and environment actions open terminal tabs）+ 插件开关（Allow ChatGPT to use installed plugins），3 条；Composer 功能名保留英文不译
 - **v2.9.5** — 补漏：GitHub Pull Requests 视图（Pull requests → 拉取请求 / GitHub CLI setup required / GitHub CLI (gh) is not installed / Check again），4 条
 - **v2.9.4** — 新增动态模式正则兜底：「See X, Y, and N more」→ 查看更多插件、「N plugins/skills」→ N 个插件/技能
 - **v2.9.3** — 补漏：Codex++ 顶部「创建」下拉（Create with Codex → 使用 Codex 创建 / Set up manually → 手动设置），2 条
