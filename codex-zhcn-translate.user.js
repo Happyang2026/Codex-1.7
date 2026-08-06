@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.8
-// @description  Codex简体中文汉化补丁（v2.9.8：补 Preferences 页标题 + 差异标记下拉选项 2 条——Preferences/Color +/- markers）
+// @version      2.9.9
+// @description  Codex简体中文汉化补丁（v2.9.9：补新建项目对话框 Output 分类标题 1 条——Outputs）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -626,6 +626,9 @@
     // v2.9.8 补漏：Preferences 页标题 + 差异标记下拉选项
     ["Preferences", "偏好设置"],
     ["Color +/- markers", "颜色 +/- 标记"],
+
+    // v2.9.9 补漏：新建项目对话框 Output 分类标题
+    ["Outputs", "输出"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
