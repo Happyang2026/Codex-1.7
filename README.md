@@ -38,6 +38,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v2.9.11** — 补漏：插件市场添加（Add plugin marketplace / Add a marketplace / Add MCP server）+ Allow network access（Allow network access + 完整描述）+ 临时对话（Temporary chat + 描述），7 条
 - **v2.9.10** — 补漏：侧边栏聊天卡片标签（Runs on your computer → 在你的电脑上运行 / Scheduled task run → 定时任务运行），2 条
 - **v2.9.9** — 补漏：新建项目对话框 Output 分类标题 Outputs → 输出，1 条
 - **v2.9.8** — 补漏：Preferences 页标题 → 偏好设置 + 差异标记下拉选项 Color +/- markers → 颜色 +/- 标记，2 条
