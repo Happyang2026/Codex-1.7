@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.4
-// @description  Codex简体中文汉化补丁（v2.9.4：新增动态模式正则兜底——"See X, Y, and N more"→查看更多插件、数字+plugins/skills→N 个插件/技能）
+// @version      2.9.5
+// @description  Codex简体中文汉化补丁（v2.9.5：补 GitHub Pull Requests 视图 4 条——Pull requests / GitHub CLI setup required / GitHub CLI (gh) is not installed / Check again）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -608,6 +608,12 @@
     // v2.9.3 补漏：Codex++ 顶部「创建」下拉
     ["Create with Codex", "使用 Codex 创建"],
     ["Set up manually", "手动设置"],
+
+    // v2.9.5 补漏：GitHub Pull Requests 视图
+    ["Pull requests", "拉取请求"],
+    ["GitHub CLI setup required", "需要安装 GitHub CLI"],
+    ["GitHub CLI (gh) is not installed", "未安装 GitHub CLI (gh)"],
+    ["Check again", "重新检查"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
