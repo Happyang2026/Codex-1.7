@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.9
-// @description  Codex简体中文汉化补丁（v2.9.9：补新建项目对话框 Output 分类标题 1 条——Outputs）
+// @version      2.9.10
+// @description  Codex简体中文汉化补丁（v2.9.10：补侧边栏聊天卡片标签 2 条——Runs on your computer/Scheduled task run）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -629,6 +629,10 @@
 
     // v2.9.9 补漏：新建项目对话框 Output 分类标题
     ["Outputs", "输出"],
+
+    // v2.9.10 补漏：侧边栏聊天卡片标签
+    ["Runs on your computer", "在你的电脑上运行"],
+    ["Scheduled task run", "定时任务运行"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
