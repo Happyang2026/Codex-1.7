@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.2
-// @description  Codex简体中文汉化补丁（v2.9.2：补 Ask for approval / custom / ^ + Enter for multiline prompts / ^ + Enter always 等 4 条）
+// @version      2.9.3
+// @description  Codex简体中文汉化补丁（v2.9.3：补顶部 Create 下拉的 Create with Codex / Set up manually 2 条）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -604,6 +604,10 @@
     ["custom", "自定义"],
     ["^ + Enter for multiline prompts", "^ + Enter 用于多行提示"],
     ["^ + Enter always", "^ + Enter 总是"],
+
+    // v2.9.3 补漏：Codex++ 顶部「创建」下拉
+    ["Create with Codex", "使用 Codex 创建"],
+    ["Set up manually", "手动设置"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
