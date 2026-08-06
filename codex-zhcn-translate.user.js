@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.5
-// @description  Codex简体中文汉化补丁（v2.9.5：补 GitHub Pull Requests 视图 4 条——Pull requests / GitHub CLI setup required / GitHub CLI (gh) is not installed / Check again）
+// @version      2.9.6
+// @description  Codex简体中文汉化补丁（v2.9.6：补 Preferences 偏好页底部面板区/插件区 3 条——Default terminal location/Choose where the terminal shortcut and environment actions open terminal tabs/Allow ChatGPT to use installed plugins；Composer 功能名保留英文不译）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -614,6 +614,11 @@
     ["GitHub CLI setup required", "需要安装 GitHub CLI"],
     ["GitHub CLI (gh) is not installed", "未安装 GitHub CLI (gh)"],
     ["Check again", "重新检查"],
+
+    // v2.9.6 补漏：偏好设置底部面板区 + 插件开关
+    ["Default terminal location", "默认终端位置"],
+    ["Choose where the terminal shortcut and environment actions open terminal tabs", "选择终端快捷键和环境操作打开终端标签的位置"],
+    ["Allow ChatGPT to use installed plugins", "允许 ChatGPT 使用已安装插件"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
