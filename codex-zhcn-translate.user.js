@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.7
-// @description  Codex简体中文汉化补丁（v2.9.7：补 Composer/Follow-up behavior 长描述 1 条）
+// @version      2.9.8
+// @description  Codex简体中文汉化补丁（v2.9.8：补 Preferences 页标题 + 差异标记下拉选项 2 条——Preferences/Color +/- markers）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://openai-codex/*
 // @grant        none
@@ -622,6 +622,10 @@
 
     // v2.9.7 补漏：Composer Follow-up behavior 长描述
     ["Queue follow-ups while ChatGPT runs or steer the current run. Press Ctrl+↩ to do the opposite for one message", "在 ChatGPT 运行期间排队后续跟进或操控当前任务。按 Ctrl+↩ 反转行为（仅本次消息）"],
+
+    // v2.9.8 补漏：Preferences 页标题 + 差异标记下拉选项
+    ["Preferences", "偏好设置"],
+    ["Color +/- markers", "颜色 +/- 标记"],
 
     // === v1.2 原有词表 ===
     // 侧边栏 / 导航
