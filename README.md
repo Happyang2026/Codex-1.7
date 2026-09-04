@@ -1,12 +1,24 @@
 # Codex简体中文汉化脚本
 
-Codex 客户端（app://openai-codex）全界面简体中文化用户脚本。
+Codex 客户端（app://- 或 app://openai-codex）全界面简体中文化用户脚本。
+
+## ⚠️ v3.0 重要变更（2026-09）
+
+Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`，且 **Codex++ 8 月起不再自动注入本地 user_scripts**（脚本逻辑本身仍兼容新版页面，已通过 CDP 手动注入验证 651 词条全部生效）。
+
+因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，升级不再受影响：
+
+1. `codex_zh_injector.py`：常驻进程，每 3 秒通过 ChatGPT 客户端调试端口（127.0.0.1:9229）检测页面，未汉化则注入本脚本（UTF-8 经 TextDecoder 正确解码，避免乱码）
+2. 开机自启：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\codex-zh-injector.vbs`（pythonw 静默运行）
+3. 运行前提：Codex++ 启动 ChatGPT 客户端时需带 `--remote-debugging-port=9229`
+
+**使用本注入器后，`@match` 与 Codex++ 用户脚本是否注入已无关紧要**——注入器直接写页面。
 
 ## 背景
 
 Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉化.user.js` v1.0）存在致命 bug：使用了不存在的 API `document.createObserver`，导致脚本一启动即抛 `TypeError`，完全无法生效；且词表仅 10 条，覆盖不足。
 
-本项目为**修复 + 增强版**（v1.7）：
+本项目为**修复 + 增强版**（现 v3.0）：
 
 - 修复 `document.createObserver` 崩溃 bug，改用标准 `new MutationObserver`
 - 词表 163 条，覆盖侧边栏 / 主面板 / 新建项目 / 插件 / 文档 / 帮助 / 运行环境 / 内置浏览器 / 推理强度选择器等
@@ -38,6 +50,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v3.0** — 修复页面 URL 升级变化导致的 @match 失效（`app://openai-codex` → `app://-`，双规则兼容）；新增独立 CDP 注入器方案（codex_zh_injector.py + 开机自启），脱离 Codex++ 注入机制，升级不受影响
 - **v2.9.14** — 补漏：定时任务自动化输出卡片 4 条（Automation → 自动化 / Automation ID → 自动化 ID / Automation memory → 自动化记忆 / Last run → 上次运行）
 - **v2.9.13** — 补漏：Composer 建议卡 React split-text 独立片段 4 条（for a topic I'm exploring / after comparing options / for an upcoming meeting / for a strategy or project），处理整段词条被 React 拆成独立文本节点的情况
 - **v2.9.12** — 补漏：Composer 加号 → 请求审批下拉 4 条（How should ChatGPT actions be approved? / Always ask to edit external files and use the internet / Custom (config.toml) / Uses permissions defined in config.toml）
