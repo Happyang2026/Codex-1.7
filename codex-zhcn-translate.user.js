@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      2.9.14
-// @description  Codex简体中文汉化补丁（v2.9.14：补定时任务自动化输出卡片 4 条——Automation/Automation ID/Automation memory/Last run）
+// @version      3.0
+// @description  Codex简体中文汉化补丁（v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
 // @author       BigPizzaV3 (enhanced)
+// @match        app://-/*
 // @match        app://openai-codex/*
 // @grant        none
 // ==/UserScript==
