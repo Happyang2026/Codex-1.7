@@ -2,29 +2,45 @@
 
 Codex 客户端（app://- 或 app://openai-codex）全界面简体中文化用户脚本。
 
-## ⚠️ v3.0 重要变更（2026-09）
+## ⚠️ v3.1 运行机制（2026-09）
 
-Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`，且 **Codex++ 8 月起不再自动注入本地 user_scripts**（脚本逻辑本身仍兼容新版页面，已通过 CDP 手动注入验证 651 词条全部生效）。
+Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`，且 **Codex++ 8 月起不再自动注入本地 user_scripts**（脚本逻辑本身仍兼容新版页面，已通过 CDP 验证 676 词条全部生效）。
 
-因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，升级不再受影响：
+因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，客户端升级不再受影响；v3.1 补齐常驻可靠性：
 
 1. `codex_zh_injector.py`：常驻进程，每 3 秒通过 ChatGPT 客户端调试端口（127.0.0.1:9229）检测页面，未汉化则注入本脚本（UTF-8 经 TextDecoder 正确解码，避免乱码）
-2. 开机自启：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\codex-zh-injector.vbs`（pythonw 静默运行）
-3. 运行前提：Codex++ 启动 ChatGPT 客户端时需带 `--remote-debugging-port=9229`
+   - **词表热更新**：脚本文件内容变化（MD5）时自动重新注入，改词表后无需重启客户端
+   - **单实例保护**：占用本地端口 47653，重复启动自动退出
+   - **日志**：`%APPDATA%\Codex++\zh_injector.log`
+2. `codex_zh_watchdog.py`：看门狗，探测注入器单实例端口，已退出则拉起。由两种方式调用：
+   - 开机自启：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\codex-zh-injector.vbs`（pythonw 静默运行）
+   - 计划任务 `CodexZhInjectorWatchdog`：每 5 分钟检查一次并自愈（`schtasks /Run /TN CodexZhInjectorWatchdog` 可手动触发）
+3. 手动恢复：双击桌面 `Codex汉化注入器.bat`
+4. 运行前提：Codex++ 启动 ChatGPT 客户端时需带 `--remote-debugging-port=9229`
 
 **使用本注入器后，`@match` 与 Codex++ 用户脚本是否注入已无关紧要**——注入器直接写页面。
+
+### 排障速查
+
+| 现象 | 处理 |
+| --- | --- |
+| 界面全英文 | 双击桌面 `Codex汉化注入器.bat`，5-10 秒后恢复 |
+| 部分词条未翻译 | 确认词表文件已更新（注入器会自动热更新）；仍未生效则看日志 |
+| 改了词表不生效 | 检查 `zh_injector.log` 是否出现「脚本已更新，重新注入」 |
+| 完全无反应 | 查 `zh_injector.log`；确认 9229 端口在监听（`netstat -ano \| findstr 9229`） |
+| 客户端调试端口变了 | 改 `codex_zh_injector.py` 顶部 `POLL_INTERVAL` 附近的 9229 端口号 |
 
 ## 背景
 
 Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉化.user.js` v1.0）存在致命 bug：使用了不存在的 API `document.createObserver`，导致脚本一启动即抛 `TypeError`，完全无法生效；且词表仅 10 条，覆盖不足。
 
-本项目为**修复 + 增强版**（现 v3.0）：
+本项目为**修复 + 增强版**（现 v3.1）：
 
 - 修复 `document.createObserver` 崩溃 bug，改用标准 `new MutationObserver`
-- 词表 163 条，覆盖侧边栏 / 主面板 / 新建项目 / 插件 / 文档 / 帮助 / 运行环境 / 内置浏览器 / 推理强度选择器等
-- 同时翻译 `aria-label` / `title` / `placeholder` / `alt` 属性文本（纯图标按钮也能翻）
-- 上下文识别：`Light` 在主题选择器中译「浅色」，在推理强度（Effort）选择器中译「低」
-- 省略号归一化（兼容 `...` 与 `…`、多余空白、换行）
+- 词表 676 条，覆盖侧边栏 / 主面板 / 新建项目 / 插件 / 文档 / 帮助 / 运行环境 / 内置浏览器 / 推理强度选择器 / 设置页 / 键盘快捷键页 / 定时任务 / 工具栏等
+- 同时翻译 `aria-label` / `title` / `placeholder` / `alt` 属性文本（纯图标按钮也能翻，含含变量名的标签如「X 的项目操作」）
+- 上下文识别：`Light` 在主题选择器中译「浅色」，在推理强度（Effort）选择器中译「低」；`On` 在频率设置中译「于」，开关按钮译「开」
+- 省略号归一化（兼容 `...` 与 `…`、多余空白、换行）、弯引号归一化
 - 只做整段文本匹配，**不误翻代码块与用户消息**（跳过 pre/code/textarea/可编辑区域）
 - MutationObserver + 2s 定时补扫，应对 React 重渲染
 
@@ -50,6 +66,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v3.1** — 修复汉化失效（注入器进程未常驻）：新增 `codex_zh_watchdog.py` 看门狗 + Windows 计划任务 `CodexZhInjectorWatchdog`（每 5 分钟自愈），VBS 与桌面 bat 统一走 watchdog 入口；注入器新增**词表热更新**（脚本 MD5 变化即重新注入，改词条不再需要重启客户端）、单实例保护、UTF-8 日志；词表 650 → 676 条（顶栏 Update → 更新、工具栏与无障碍 aria-label 一批、含变量名标签正则，如「X 的项目操作」）
 - **v3.0** — 修复页面 URL 升级变化导致的 @match 失效（`app://openai-codex` → `app://-`，双规则兼容）；新增独立 CDP 注入器方案（codex_zh_injector.py + 开机自启），脱离 Codex++ 注入机制，升级不受影响
 - **v2.9.14** — 补漏：定时任务自动化输出卡片 4 条（Automation → 自动化 / Automation ID → 自动化 ID / Automation memory → 自动化记忆 / Last run → 上次运行）
 - **v2.9.13** — 补漏：Composer 建议卡 React split-text 独立片段 4 条（for a topic I'm exploring / after comparing options / for an upcoming meeting / for a strategy or project），处理整段词条被 React 拆成独立文本节点的情况
