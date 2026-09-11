@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Codex 汉化独立注入器 (v3.1)
+Codex 汉化独立注入器 (v3.2)
 通过 ChatGPT 客户端调试端口注入汉化脚本，不依赖 Codex++ 的脚本注入机制。
 
+v3.2 变更：
+  - 改用「页面版本标记」判断是否需要注入（window.__ZH_INJ_HASH__）：
+    不再依赖页面文本是否已渲染，彻底消除页面加载早期的「注入未确认」误报
+    与随之而来的重复注入；页面刷新/导航后标记自动丢失，会重新注入
 v3.1 新增：
   - 脚本热更新：词表文件变更后自动重新注入，无需重启客户端
   - 日志文件 zh_injector.log，便于排查
@@ -10,7 +14,7 @@ v3.1 新增：
   - 注入失败退避，避免空转
 原理：
   - 轮询 127.0.0.1:9229 拿到 ChatGPT 页面
-  - 脚本 hash 变化 或 页面未汉化 -> 注入
+  - 页面无版本标记 或 标记版本与脚本 hash 不符 -> 注入
 运行：pythonw codex_zh_injector.py
 """
 import json, base64, time, hashlib, socket, os, sys, urllib.request
@@ -116,14 +120,30 @@ def is_zh(ws_url):
         return False
 
 
-def inject(ws_url, b64):
-    """注入汉化脚本。脚本是 UTF-8，必须走 TextDecoder，直接 eval(atob()) 会乱码"""
+def page_version(ws_url):
+    """读取页面上记录的汉化脚本版本标记。
+    返回 None 表示页面未注入（首次打开，或页面刷新/导航后标记已丢失）。
+    这是「是否需要注入」的可靠依据 —— 不依赖页面文本是否已渲染，
+    避免页面加载早期误判为「未汉化」而反复重复注入。"""
+    try:
+        v = cdp_eval(ws_url, "window.__ZH_INJ_HASH__||null", timeout=15)
+        return v if isinstance(v, str) and v else None
+    except Exception:
+        return None
+
+
+def inject(ws_url, b64, version):
+    """注入汉化脚本。脚本是 UTF-8，必须走 TextDecoder，直接 eval(atob()) 会乱码。
+    注入同时写入版本标记 window.__ZH_INJ_HASH__，成功后即时确认，无需等待渲染。"""
     try:
         expr = ("eval(new TextDecoder('utf-8').decode("
-                "Uint8Array.from(atob('%s'), function(c){return c.charCodeAt(0);})))" % b64)
-        cdp_eval(ws_url, expr, timeout=45)
-        time.sleep(2)
-        return is_zh(ws_url)
+                "Uint8Array.from(atob('%s'), function(c){return c.charCodeAt(0);})));"
+                "window.__ZH_INJ_HASH__='%s';'ok'" % (b64, version))
+        v = cdp_eval(ws_url, expr, timeout=45)
+        if isinstance(v, str) and v.startswith("EXC:"):
+            log("注入异常: %s" % v[:200])
+            return False
+        return page_version(ws_url) == version
     except Exception as e:
         log("注入异常: %s" % e)
         return False
@@ -135,7 +155,7 @@ def main():
         log("已有注入器实例在运行，本次退出")
         return
     log("=" * 50)
-    log("汉化注入器 v3.1 启动 | 轮询 %ss | 脚本 %s" % (POLL_INTERVAL, SCRIPT_PATH))
+    log("汉化注入器 v3.2 启动 | 轮询 %ss | 脚本 %s" % (POLL_INTERVAL, SCRIPT_PATH))
     try:
         _, cur_hash = read_script()
     except Exception as e:
@@ -149,7 +169,6 @@ def main():
         try:
             raw, new_hash = read_script()
             b64 = base64.b64encode(raw).decode()
-            script_changed = (new_hash != injected_hash)
 
             ws_url = get_page_ws()
             if ws_url is None:
@@ -160,15 +179,16 @@ def main():
                 interval = POLL_INTERVAL
             else:
                 no_port_ticks = 0
-                if script_changed:
-                    log("脚本已更新(%s)，重新注入..." % new_hash[:8])
-                zh = is_zh(ws_url)
-                if script_changed or not zh:
-                    if script_changed:
-                        log("注入中（词表更新触发）...")
-                    else:
-                        log("检测到页面未汉化，注入中...")
-                    if inject(ws_url, b64):
+                pv = page_version(ws_url)
+                if pv is None:
+                    reason = "检测到页面未注入（首次打开或页面已刷新）"
+                elif pv != new_hash:
+                    reason = "脚本已更新(%s)" % new_hash[:8]
+                else:
+                    reason = None
+                if reason:
+                    log("%s，注入中..." % reason)
+                    if inject(ws_url, b64, new_hash):
                         injected_hash = new_hash
                         fails = 0
                         log("✓ 汉化注入成功")
