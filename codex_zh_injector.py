@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Codex 汉化独立注入器 (v3.2)
+Codex 汉化独立注入器 (v3.3)
 通过 ChatGPT 客户端调试端口注入汉化脚本，不依赖 Codex++ 的脚本注入机制。
 
+v3.3 新增：
+  - 原生菜单汉化：页面脚本改不了 Electron 主进程构建的菜单（托盘右键菜单等），
+    改为连接主进程调试端口（--inspect=9333）应用 codex_zh_main_patch.js
+  - 主进程补丁带版本标记（内容 MD5），补丁文件更新后自动重新应用
 v3.2 变更：
   - 改用「页面版本标记」判断是否需要注入（window.__ZH_INJ_HASH__）：
     不再依赖页面文本是否已渲染，彻底消除页面加载早期的「注入未确认」误报
@@ -15,15 +19,18 @@ v3.1 新增：
 原理：
   - 轮询 127.0.0.1:9229 拿到 ChatGPT 页面
   - 页面无版本标记 或 标记版本与脚本 hash 不符 -> 注入
+  - 轮询 127.0.0.1:9333 拿到主进程 -> 应用原生菜单汉化补丁
 运行：pythonw codex_zh_injector.py
 """
 import json, base64, time, hashlib, socket, os, sys, urllib.request
 import websocket
 
 SCRIPT_PATH = r"C:\Users\41691\AppData\Roaming\Codex++\user_scripts\market-codex-zhcn-translate.js"
+MAIN_PATCH_PATH = r"C:\Users\41691\AppData\Roaming\Codex++\codex_zh_main_patch.js"
 LOG_PATH = r"C:\Users\41691\AppData\Roaming\Codex++\zh_injector.log"
 LOCK_PORT = 47653
 DEBUG_PORTS = [9229, 9222, 9223, 9230, 9333]   # 首发 9229（Codex++ 默认），其余备用
+MAIN_DEBUG_PORTS = [9333, 9334, 9335]          # Electron 主进程（--inspect）；9333 为首发
 POLL_INTERVAL = 3
 BACKOFF_INTERVAL = 15
 MAX_LOG_BYTES = 512 * 1024
@@ -149,13 +156,71 @@ def inject(ws_url, b64, version):
         return False
 
 
+def get_main_ws():
+    """探测 Electron 主进程调试端口，返回 (端口, WebSocket URL)。
+    页面脚本无法触达主进程构建的原生菜单（托盘右键菜单、原生上下文菜单），
+    只能通过 --inspect 暴露的 Node 调试通道在运行时打补丁。"""
+    for i, port in enumerate(MAIN_DEBUG_PORTS):
+        try:
+            req = urllib.request.Request("http://127.0.0.1:%d/json/list" % port,
+                                         headers={"User-Agent": "zh-injector"})
+            data = json.loads(urllib.request.urlopen(req, timeout=2).read().decode())
+            for t in data:
+                if t.get("type") == "node":
+                    return port, t.get("webSocketDebuggerUrl")
+        except Exception:
+            continue
+    return None, None
+
+
+def ensure_main_patch(ws_state):
+    """应用/刷新原生菜单汉化补丁（幂等，按补丁内容 MD5 判断）"""
+    try:
+        with open(MAIN_PATCH_PATH, "rb") as f:
+            raw = f.read()
+        tag = hashlib.md5(raw).hexdigest()[:12]
+        src = raw.decode("utf-8")
+    except Exception as e:
+        return
+
+    port, ws_url = get_main_ws()
+    if ws_url is None:
+        if ws_state.get("port") is not None:
+            ws_state["port"] = None
+            ws_state["tag"] = None
+        return
+
+    if ws_state.get("port") != port:
+        ws_state["port"] = port
+        ws_state["tag"] = None
+        log("发现主进程调试端口 %d" % port)
+
+    if ws_state.get("tag") == tag:
+        return
+
+    try:
+        cur = cdp_eval(ws_url, "global.__ZH_MAIN_PATCH__||null", timeout=10)
+        if cur == tag:
+            ws_state["tag"] = tag
+            return
+        expr = "global.__ZH_MAIN_TAG__=%s;\n%s" % (json.dumps(tag), src)
+        r = cdp_eval(ws_url, expr, timeout=30)
+        if isinstance(r, str) and (r.startswith("OK") or r == "already"):
+            ws_state["tag"] = tag
+            log("✓ 原生菜单汉化已应用（主进程端口 %d）: %s" % (port, r))
+        else:
+            log("原生菜单补丁返回异常: %s" % str(r)[:200])
+    except Exception as e:
+        log("原生菜单补丁异常: %s" % e)
+
+
 def main():
     lock = acquire_lock()
     if lock is None:
         log("已有注入器实例在运行，本次退出")
         return
     log("=" * 50)
-    log("汉化注入器 v3.2 启动 | 轮询 %ss | 脚本 %s" % (POLL_INTERVAL, SCRIPT_PATH))
+    log("汉化注入器 v3.3 启动 | 轮询 %ss | 脚本 %s" % (POLL_INTERVAL, SCRIPT_PATH))
     try:
         _, cur_hash = read_script()
     except Exception as e:
@@ -164,11 +229,15 @@ def main():
     injected_hash = None       # 已注入页面的脚本版本
     fails = 0
     no_port_ticks = 0
+    main_state = {"port": None, "tag": None}
     while True:
         interval = POLL_INTERVAL
         try:
             raw, new_hash = read_script()
             b64 = base64.b64encode(raw).decode()
+
+            # 原生菜单（托盘等）走主进程补丁
+            ensure_main_patch(main_state)
 
             ws_url = get_page_ws()
             if ws_url is None:
