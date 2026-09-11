@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      3.2
-// @description  Codex简体中文汉化补丁（v3.2：新增 attributes 监听，React 单独改写 aria-label/title 属性时也能即时重新翻译；补充「打开帮助菜单」等无障碍标签；v3.1：补全 Update 按钮与工具栏 aria-label；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
+// @version      3.3
+// @description  Codex简体中文汉化补丁（v3.3：修复两处问题 —— ①输入框占位提示 data-placeholder 未翻译致「Work with ChatGPT」残留英文，且 ProseMirror 会回滚编辑器 DOM 的外来改动，故改为拦截 setAttribute 在源头替换；②推理强度标签 Light 被主题词条误吃成「浅色」，改为按组件属性（data-composer-navigation-target="reasoning" 等）识别上下文，档位统一 极低/低/中/高/最高；v3.2：新增 attributes 监听；v3.1：补全 Update 按钮与工具栏 aria-label；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://-/*
 // @match        app://openai-codex/*
@@ -85,6 +85,11 @@
     ["High", "高"],
     ["Extra High", "极高"],
     ["Low", "低"],
+    // v3.3 新增：推理强度完整档位（官方消息目录 composer.mode.local.reasoning.*）
+    // 注：Light 在推理强度语境下由 lookup() 的上下文覆盖译为「低」，
+    //     这里的 ["Light","浅色"] 服务于主题选择器，两者不要混
+    ["Minimal", "极低"],
+    ["Max", "最高"],
 
     // v1.8 新增：聊天输入框"Figure out next steps"系列建议
     ["Figure out next steps", "想好下一步"],
@@ -809,7 +814,10 @@
     ["Close menu", "关闭菜单"]
   ];
 
-  var ATTR_NAMES = ["title", "aria-label", "placeholder", "alt"];
+  // v3.3：新增 data-placeholder —— ProseMirror 输入框的占位提示走的是
+  // <p class="placeholder" data-placeholder="Work with ChatGPT">，真正显示的字来自
+  // CSS ::after { content: attr(data-placeholder) }，只翻译 placeholder 属性拿不到它
+  var ATTR_NAMES = ["title", "aria-label", "placeholder", "data-placeholder", "alt"];
 
   function norm(s) {
     return String(s)
@@ -825,20 +833,47 @@
     NORM_KEYS[k] = norm(DICT[k][0]).toLowerCase();
   }
 
+  // v3.3：推理强度（Reasoning effort）上下文识别。
+  // 同一个英文词在应用里有两种完全不同的含义，官方消息目录可佐证：
+  //   settings.general.appearance.theme.light        = Light → 主题「浅色」
+  //   composer.mode.local.reasoning.low.label.v2     = Light → 推理强度「低」
+  // 旧版只在祖先文本里找 "effort" / "推理强度" 两个词，但 composer 底部那个强度标签
+  // （自定义 浅色）的祖先链里根本没有这两个词，于是被主题词条误吃成了「浅色」。
+  // 现在改为双重判定：祖先文本标记 + 组件属性标记（属性名含 reasoning 即命中，
+  // 例如 data-composer-navigation-target="reasoning"、data-selected-reasoning-effort）。
+  var EFFORT_ZH = {
+    minimal: "极低", light: "低", low: "低",
+    medium: "中", high: "高", max: "最高"
+  };
+  function inReasoningContext(host) {
+    var cur = host, depth = 0;
+    while (cur && depth < 12) {
+      if (cur.nodeType === 1) {
+        // 1) 属性标记：属性名里含 reasoning 即认定为推理强度容器
+        if (cur.attributes) {
+          for (var i = 0; i < cur.attributes.length; i++) {
+            var an = (cur.attributes[i].name || "").toLowerCase();
+            if (an.indexOf("reasoning") !== -1) return true;
+          }
+        }
+        // 2) 文本标记：兼容设置页里带 "Effort" / 「推理强度」标题的选择器
+        var ctx = cur.textContent || "";
+        if (ctx.toLowerCase().indexOf("effort") !== -1 || ctx.indexOf("推理强度") !== -1) return true;
+      }
+      cur = cur.parentElement;
+      depth++;
+    }
+    return false;
+  }
+
   function lookup(text, host) {
     if (!text) return null;
     var t = norm(text).toLowerCase();
     // 上下文覆盖：推理强度（Effort）选择器内的 Light 应译为"低"，避免被主题色"浅色"误吃
     // 接受两种容器标记：原文 "effort" 或我已翻译的标题 "推理强度"（自检发现脚本先把 Effort 翻成了 推理强度，原标记失效）
-    if (t === "light" && host) {
-      var cur = host, depth = 0;
-      while (cur && depth < 6) {
-        var ctx = cur.textContent || "";
-        if (ctx.toLowerCase().indexOf("effort") !== -1 || ctx.indexOf("推理强度") !== -1) return "低";
-        cur = cur.parentElement;
-        depth++;
-      }
-    }
+    // v3.3：推理强度档位统一走上下文覆盖（极低 / 低 / 中 / 高 / 最高），
+    // 避免 "Light" 被主题词条译成「浅色」、「Medium」被译成「中等」
+    if (EFFORT_ZH[t] !== undefined && host && inReasoningContext(host)) return EFFORT_ZH[t];
     // 上下文覆盖：On 在频率设置（On Friday / On Weekdays）中译"于"，开关按钮译"开"
     if (t === "on" && host) {
       var cur2 = host, depth2 = 0;
@@ -951,7 +986,9 @@
     if (SKIP_TAGS_FOR_ELEMENT[tag]) return;
     var fullText = el.textContent || "";
     if (!fullText) return;
-    var zh = lookup(fullText);
+    // v3.3：补上 host 参数 —— 此前不传 host，上下文覆盖（推理强度 / 频率 On）在
+    // 「整段元素匹配」这条路径上全部失效，会把 Light 译成主题色的「浅色」
+    var zh = lookup(fullText, el);
     if (zh === null) return;
     if (norm(fullText) === zh) return;
     // 元素必须只含文本/内联子节点，否则会破坏布局（图标/按钮/列表等）
@@ -969,14 +1006,35 @@
       setTimeout(start, 200);
       return;
     }
+    // v3.3：单实例接管。每改一次词表，注入器都会整脚本重新注入一次，而页面不会刷新，
+    // 于是每轮都多留一个「老实例」在跑（各自的 MutationObserver + 2s 轮询）。
+    // 新旧实例会抢着翻译同一处文字：新实例译成「低」，老实例按旧词表又改回「浅色」，
+    // 表现为「改了词表不生效 / 时灵时不灵」。新实例启动前先让旧的彻底停掉。
+    if (typeof window.__ZH_ZH_TEARDOWN__ === "function") {
+      try { window.__ZH_ZH_TEARDOWN__(); } catch (e) {}
+    }
     var last = 0;
     // v3.2：可编辑区域（contenteditable，如输入框 ProseMirror）内部文本必须保护，
     // 但其**自身属性**（aria-label / title / placeholder）属于 UI 文案，可以安全翻译。
     // walk() 出于保护会跳过这些元素，这里补扫一遍它们的属性。
     function scanProtectedAttrs() {
       var list = document.querySelectorAll(
-        "[contenteditable][aria-label],[contenteditable][title],[contenteditable][placeholder]");
+        "[contenteditable][aria-label],[contenteditable][title],[contenteditable][placeholder],[contenteditable][data-placeholder]");
       for (var i = 0; i < list.length; i++) translateAttributes(list[i]);
+      // v3.3：可编辑区域「内部」的占位符元素也要翻译。
+      // ProseMirror 的输入框提示是 <p class="placeholder" data-placeholder="Work with ChatGPT">
+      // 的子孙节点，会被 isProtected 一并跳过，导致输入框占位文字永远是英文。
+      // 这里只碰 data-placeholder / placeholder 两个属性 —— 它们纯属 UI 文案；
+      // 同一区域内的用户正文（文本节点、链接 title 等）保持不翻译。
+      var ph = document.querySelectorAll("[contenteditable] [data-placeholder],[contenteditable] [placeholder]");
+      for (var j = 0; j < ph.length; j++) {
+        for (var k = 0; k < 2; k++) {
+          var an = k === 0 ? "data-placeholder" : "placeholder";
+          if (!ph[j].hasAttribute(an)) continue;
+          var zh = lookup(ph[j].getAttribute(an), ph[j]);
+          if (zh !== null) ph[j].setAttribute(an, zh);
+        }
+      }
     }
     function scan() {
       walk(document.body);
@@ -995,14 +1053,40 @@
     scan();
     // v3.2：新增 attributes 监听 —— React 单独改写 aria-label/title 等属性时（不伴随
     // 子节点变化）也能立即重新翻译；此前这类改动只能等 2 秒定时兜底，容易表现为「漏译」
-    new MutationObserver(scheduleScan).observe(document.body, {
+    var zhObserver = new MutationObserver(scheduleScan);
+    zhObserver.observe(document.body, {
       childList: true,
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ["title", "aria-label", "placeholder", "alt"]
+      attributeFilter: ["title", "aria-label", "placeholder", "data-placeholder", "alt"]
     });
-    setInterval(scan, 2000);
+    var zhTimer = setInterval(scan, 2000);
+    // 交给下一次注入的新实例接管时，用它把自己彻底停掉
+    window.__ZH_ZH_TEARDOWN__ = function () {
+      try { zhObserver.disconnect(); } catch (e) {}
+      try { clearInterval(zhTimer); } catch (e) {}
+      window.__ZH_ZH_TEARDOWN__ = null;
+    };
+  }
+
+  // v3.3：拦截 setAttribute —— 这是输入框占位提示能翻出来的关键。
+  // 输入框（ProseMirror）会把自己编辑器 DOM 上的「外来改动」回滚：实测把
+  // data-placeholder 改成中文后，300ms 内就被还原成 "Work with ChatGPT"，
+  // 所以「先写中文、等下一次扫描」的做法注定失效（写完即被撤销）。
+  // 改为在源头替换：任何代码（React 渲染 / ProseMirror 自修复）写入占位类属性时，
+  // 先把值换成中文再落盘，DOM 里存的就是中文，不存在被回滚的问题。
+  var PH_ATTRS = { "placeholder": 1, "data-placeholder": 1, "aria-placeholder": 1 };
+  if (!Element.prototype.__zhPhPatched) {
+    var _zhSetAttr = Element.prototype.setAttribute;
+    Element.prototype.setAttribute = function (name, value) {
+      if (typeof name === "string" && PH_ATTRS[name] && typeof value === "string") {
+        var zhv = lookup(value, this);
+        if (zhv !== null) value = zhv;
+      }
+      return _zhSetAttr.call(this, name, value);
+    };
+    Element.prototype.__zhPhPatched = true;
   }
 
   if (document.readyState === "loading") {
