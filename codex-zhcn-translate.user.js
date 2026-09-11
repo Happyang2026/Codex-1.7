@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      3.3
-// @description  Codex简体中文汉化补丁（v3.3：修复两处问题 —— ①输入框占位提示 data-placeholder 未翻译致「Work with ChatGPT」残留英文，且 ProseMirror 会回滚编辑器 DOM 的外来改动，故改为拦截 setAttribute 在源头替换；②推理强度标签 Light 被主题词条误吃成「浅色」，改为按组件属性（data-composer-navigation-target="reasoning" 等）识别上下文，档位统一 极低/低/中/高/最高；v3.2：新增 attributes 监听；v3.1：补全 Update 按钮与工具栏 aria-label；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
+// @version      3.4
+// @description  Codex简体中文汉化补丁（v3.4：补全模型选择器浮层「Select model / Recommended set of models / Locked, opens access options / Consumes usage limits faster / 左右方向键调整强度」与拖拽读屏提示；推理强度档位改按 Codex 官方中文对齐为 无/极低/轻度/中/高/极高/最高/Ultra/持续，并修复强度面板经 portal 挂载导致「浅色」残留（改按组件类名识别）；v3.3：修复输入框 data-placeholder 漏译与 ProseMirror 回滚；v3.2：新增 attributes 监听；v3.1：补全 Update 按钮与工具栏 aria-label；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://-/*
 // @match        app://openai-codex/*
@@ -811,7 +811,22 @@
     ["Close help menu", "关闭帮助菜单"],
     ["Help menu", "帮助菜单"],
     ["Open menu", "打开菜单"],
-    ["Close menu", "关闭菜单"]
+    ["Close menu", "关闭菜单"],
+
+    // === v3.4 补全：模型选择器浮层 + 拖拽无障碍提示（官方 zh 译法对齐）===
+    // 官方 id：composer.modelPicker.modelList.heading / default.description /
+    //        lockedModel.status / power.ultraUsageWarning / workPower.keyboardControl.instructions
+    ["Select model", "选择模型"],
+    ["Recommended set of models", "推荐模型集"],
+    ["Locked, opens access options", "已锁定，打开访问权限选项"],
+    ["Consumes usage limits faster", "更快消耗使用额度"],
+    ["Use Left and Right arrow keys to adjust power", "使用左右方向键调整强度"],
+    // react-beautiful-dnd 的读屏提示（整句与分段两种切法都兜住）
+    ["To pick up a draggable item, press the space bar. While dragging, use the arrow keys to move the item. Press space again to drop the item in its new position, or press escape to cancel.",
+     "要拾起可拖动项目，请按空格键。拖动过程中使用方向键移动项目。再次按空格键可将项目放到新位置，或按 Esc 取消。"],
+    ["To pick up a draggable item, press the space bar.", "要拾起可拖动项目，请按空格键。"],
+    ["While dragging, use the arrow keys to move the item.", "拖动过程中使用方向键移动项目。"],
+    ["Press space again to drop the item in its new position, or press escape to cancel.", "再次按空格键可将项目放到新位置，或按 Esc 取消。"]
   ];
 
   // v3.3：新增 data-placeholder —— ProseMirror 输入框的占位提示走的是
@@ -842,8 +857,9 @@
   // 现在改为双重判定：祖先文本标记 + 组件属性标记（属性名含 reasoning 即命中，
   // 例如 data-composer-navigation-target="reasoning"、data-selected-reasoning-effort）。
   var EFFORT_ZH = {
-    minimal: "极低", light: "低", low: "低",
-    medium: "中", high: "高", max: "最高"
+    none: "无", minimal: "极低", light: "轻度", low: "轻度",
+    medium: "中", high: "高", "extra high": "极高", xhigh: "极高",
+    max: "最高", ultra: "Ultra", persistent: "持续"
   };
   function inReasoningContext(host) {
     var cur = host, depth = 0;
@@ -856,7 +872,11 @@
             if (an.indexOf("reasoning") !== -1) return true;
           }
         }
-        // 2) 文本标记：兼容设置页里带 "Effort" / 「推理强度」标题的选择器
+        // 2) 组件类名标记（v3.4）：强度面板经 React portal 挂到 body，
+        //    祖先链上不含 composer 按钮的 data-* 属性，只能靠 CSS Module 类名识别
+        var cls = (cur.className || "").toString();
+        if (/EffortLabel|ViewToggle|SliderTopRowMotion|ViewControls|ViewTrack|ViewPanel/.test(cls)) return true;
+        // 3) 文本标记：兼容设置页里带 "Effort" / 「推理强度」标题的选择器
         var ctx = cur.textContent || "";
         if (ctx.toLowerCase().indexOf("effort") !== -1 || ctx.indexOf("推理强度") !== -1) return true;
       }
@@ -914,6 +934,24 @@
     if (m7) return m7[1] + " 中的定时任务";
     var m8 = pt.match(/^chat actions for (.+)$/i);
     if (m8) return m8[1] + " 的对话操作";
+    // v3.4：强度滑块读屏播报。官方模板 composer.modelPicker.workPower.keyboardControl.value
+    //       = "{value}，第 {position} 项，共 {total} 项。"，value 即 "Custom Light"（自定义 轻度）
+    var m9 = pt.match(/^(custom\s+)?([a-z]+(?: [a-z]+)?), (\d+) of (\d+)\.?$/i);
+    if (m9) {
+      var lblZh = EFFORT_ZH[(m9[2] || "").trim().toLowerCase()];
+      if (lblZh !== undefined) {
+        return (m9[1] ? "自定义 " : "") + lblZh + "，第 " + m9[3] + " 项，共 " + m9[4] + " 项。";
+      }
+    }
+    // v3.4：拖拽读屏播报（react-beautiful-dnd 运行时生成）
+    var m10 = pt.match(/^picked up draggable item (.+)\.$/i);
+    if (m10) return "已拾起可拖动项目 " + m10[1] + "。";
+    var m11 = pt.match(/^draggable item (.+) was moved over droppable area (.+)\.$/i);
+    if (m11) return "可拖动项目 " + m11[1] + " 已移到放置区域 " + m11[2] + " 上。";
+    var m12 = pt.match(/^draggable item (.+) is no longer over a droppable area\.$/i);
+    if (m12) return "可拖动项目 " + m12[1] + " 已不在任何放置区域上。";
+    var m13 = pt.match(/^draggable item (.+) was dropped\.$/i);
+    if (m13) return "已放下可拖动项目 " + m13[1] + "。";
     return null;
   }
 
