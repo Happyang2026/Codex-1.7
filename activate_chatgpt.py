@@ -27,8 +27,11 @@ from ctypes import POINTER, byref, c_void_p, c_wchar_p
 from ctypes import wintypes
 
 DEFAULT_AUMID = "OpenAI.Codex_2p2nqsd0c76g0!App"
-ARGS = "--remote-debugging-port=9229 --remote-allow-origins=*"
+# 9229：页面调试端口（汉化脚本注入用）
+# 9333：Electron 主进程调试端口（原生菜单汉化用，托盘右键菜单只有主进程能改）
+ARGS = "--remote-debugging-port=9229 --remote-allow-origins=* --inspect=9333"
 DEBUG_PORT = 9229
+MAIN_DEBUG_PORT = 9333
 LOG_PATH = r"C:\Users\41691\AppData\Roaming\Codex++\zh_launcher.log"
 
 CLSID_AAM = "{45BA127D-10A8-46EA-8AB7-56EA9078943C}"
@@ -183,6 +186,10 @@ def main():
 
         if wait_port():
             log("✓ 调试端口 %d 已开启，启动成功" % DEBUG_PORT)
+            if port_open(MAIN_DEBUG_PORT):
+                log("✓ 主进程调试端口 %d 已开启（托盘等原生菜单可汉化）" % MAIN_DEBUG_PORT)
+            else:
+                log("提示：主进程调试端口 %d 未开启，原生菜单将保持英文" % MAIN_DEBUG_PORT)
             return 0
 
         log("✗ 端口 %d 未在 %d 秒内开启，准备重试" % (DEBUG_PORT, PORT_WAIT))
