@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      3.0
-// @description  Codex简体中文汉化补丁（v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
+// @version      3.1
+// @description  Codex简体中文汉化补丁（v3.1：补全 Update 按钮与工具栏 aria-label 词条；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://-/*
 // @match        app://openai-codex/*
@@ -772,7 +772,34 @@
     ["Ask", "提问"],
     ["Logged out", "已退出登录"],
     ["Offline", "离线"],
-    ["Online", "在线"]
+    ["Online", "在线"],
+    // === v3.1 补全：顶栏按钮与无障碍标签（aria-label / title）===
+    ["Update", "更新"],
+    ["Update available", "有可用更新"],
+    ["Hide sidebar", "隐藏侧边栏"],
+    ["Show sidebar", "显示侧边栏"],
+    ["Application menu", "应用菜单"],
+    ["Scheduled task folders", "定时任务文件夹"],
+    ["Project sidebar options", "项目侧边栏选项"],
+    ["Chat sidebar options", "对话侧边栏选项"],
+    ["Chat actions", "对话操作"],
+    ["Add new project", "新建项目"],
+    ["Open profile menu", "打开个人资料菜单"],
+    ["Composer utility bar", "输入栏工具栏"],
+    ["Choose where to run this chat", "选择此对话的运行位置"],
+    ["Notifications alt+T", "通知 alt+T"],
+    ["Toggle sidebar", "切换侧边栏"],
+    ["Activate to open the chat", "点击打开对话"],
+    ["Loading plugins", "正在加载插件"],
+    ["Loading skills", "正在加载技能"],
+    ["Reload", "重新加载"],
+    ["Refresh", "刷新"],
+    ["Learn more", "了解更多"],
+    ["Dismiss", "关闭"],
+    ["View details", "查看详情"],
+    ["See all", "查看全部"],
+    ["Show more", "显示更多"],
+    ["Show less", "收起"]
   ];
 
   var ATTR_NAMES = ["title", "aria-label", "placeholder", "alt"];
@@ -830,6 +857,21 @@
     if (m2) return m2[1] + " 个插件";
     var m3 = pt.match(/^(\d+) skills?$/i);
     if (m3) return m3[1] + " 个技能";
+    // v3.1：含变量名的无障碍标签（aria-label），保留用户内容（项目名等）原样
+    var m4 = pt.match(/^switch mode, current mode: (.+)$/i);
+    if (m4) {
+      var mode = m4[1];
+      var modeZh = /^work$/i.test(mode) ? "工作" : (/^codex$/i.test(mode) ? "Codex" : mode);
+      return "切换模式，当前模式：" + modeZh;
+    }
+    var m5 = pt.match(/^project actions for (.+)$/i);
+    if (m5) return m5[1] + " 的项目操作";
+    var m6 = pt.match(/^start new chat in (.+)$/i);
+    if (m6) return "在 " + m6[1] + " 中开启新对话";
+    var m7 = pt.match(/^scheduled tasks in (.+)$/i);
+    if (m7) return m7[1] + " 中的定时任务";
+    var m8 = pt.match(/^chat actions for (.+)$/i);
+    if (m8) return m8[1] + " 的对话操作";
     return null;
   }
 
