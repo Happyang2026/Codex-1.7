@@ -19,6 +19,7 @@ import websocket
 SCRIPT_PATH = r"C:\Users\41691\AppData\Roaming\Codex++\user_scripts\market-codex-zhcn-translate.js"
 LOG_PATH = r"C:\Users\41691\AppData\Roaming\Codex++\zh_injector.log"
 LOCK_PORT = 47653
+DEBUG_PORTS = [9229, 9222, 9223, 9230, 9333]   # 首发 9229（Codex++ 默认），其余备用
 POLL_INTERVAL = 3
 BACKOFF_INTERVAL = 15
 MAX_LOG_BYTES = 512 * 1024
@@ -59,18 +60,24 @@ def read_script():
     return raw, hashlib.md5(raw).hexdigest()
 
 
-def get_page_ws(port=9229):
-    try:
-        req = urllib.request.Request("http://127.0.0.1:%d/json" % port,
-                                     headers={"User-Agent": "zh-injector"})
-        pages = json.loads(urllib.request.urlopen(req, timeout=3).read().decode())
-        for p in pages:
-            url = p.get("url") or ""
-            if p.get("type") == "page" and url.startswith("app://"):
-                return p.get("webSocketDebuggerUrl")
-        return None
-    except Exception:
-        return None
+def get_page_ws():
+    """依次探测候选调试端口，返回 ChatGPT 页面 WebSocket URL。
+    主端口 9229（Codex++ 默认），其余为备用，防止将来端口号变化导致失效。"""
+    for i, port in enumerate(DEBUG_PORTS):
+        timeout = 3 if i == 0 else 1
+        try:
+            req = urllib.request.Request("http://127.0.0.1:%d/json" % port,
+                                         headers={"User-Agent": "zh-injector"})
+            pages = json.loads(urllib.request.urlopen(req, timeout=timeout).read().decode())
+            for p in pages:
+                url = p.get("url") or ""
+                if p.get("type") == "page" and url.startswith("app://"):
+                    if i > 0:
+                        log("检测到页面在备用端口 %d" % port)
+                    return p.get("webSocketDebuggerUrl")
+        except Exception:
+            continue
+    return None
 
 
 def cdp_eval(ws_url, expr, timeout=25):
@@ -146,7 +153,8 @@ def main():
             if ws_url is None:
                 no_port_ticks += 1
                 if no_port_ticks % 20 == 1:
-                    log("等待调试端口 9229（ChatGPT 未启动或未开启调试端口）")
+                    log("等待调试端口（ChatGPT 未启动或未开调试端口），已探测: %s"
+                        % ",".join(str(p) for p in DEBUG_PORTS))
                 interval = POLL_INTERVAL
             else:
                 no_port_ticks = 0
