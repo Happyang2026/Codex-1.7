@@ -15,8 +15,13 @@ Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`
 2. `codex_zh_watchdog.py`：看门狗，探测注入器单实例端口，已退出则拉起。由两种方式调用：
    - 开机自启：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\codex-zh-injector.vbs`（pythonw 静默运行）
    - 计划任务 `CodexZhInjectorWatchdog`：每 5 分钟检查一次并自愈（`schtasks /Run /TN CodexZhInjectorWatchdog` 可手动触发）
-3. 手动恢复：双击桌面 `Codex汉化注入器.bat`
-4. 运行前提：Codex++ 启动 ChatGPT 客户端时需带 `--remote-debugging-port=9229`
+3. `activate_chatgpt.py`：**一键启动（v3.2 新增）**。ChatGPT 桌面端为微软商店 MSIX 包（OpenAI.Codex），
+   普通方式激活无法传命令行参数、直接运行 exe 会因包身份丢失导致 GPU 崩溃。本脚本用
+   `IApplicationActivationManager::ActivateApplication` 激活，既保留包身份又传入
+   `--remote-debugging-port=9229 --remote-allow-origins=*`。桌面双击 `ChatGPT汉化启动.bat` 即用。
+   当 Codex++ 的一键启动失灵（客户端起了但调试端口没开）时，用它替代。
+4. 手动恢复注入：双击桌面 `Codex汉化注入器.bat`
+5. 运行前提：ChatGPT 客户端需带 `--remote-debugging-port=9229` 启动（用上面的启动器即可）
 
 **使用本注入器后，`@match` 与 Codex++ 用户脚本是否注入已无关紧要**——注入器直接写页面。
 
@@ -24,11 +29,13 @@ Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`
 
 | 现象 | 处理 |
 | --- | --- |
+| 一键启动后客户端没起来 / 起来但无调试端口 | 双击桌面 `ChatGPT汉化启动.bat`（带参激活，保留包身份） |
+| 注入器日志报 `Handshake status 403 Forbidden` | 新版 Chromium 的 CDP Origin 校验；启动器已加 `--remote-allow-origins=*`，注入器已加 `suppress_origin`，v3.2 起免疫 |
 | 界面全英文 | 双击桌面 `Codex汉化注入器.bat`，5-10 秒后恢复 |
 | 部分词条未翻译 | 确认词表文件已更新（注入器会自动热更新）；仍未生效则看日志 |
 | 改了词表不生效 | 检查 `zh_injector.log` 是否出现「脚本已更新，重新注入」 |
 | 完全无反应 | 查 `zh_injector.log`；确认 9229 端口在监听（`netstat -ano \| findstr 9229`） |
-| 客户端调试端口变了 | 改 `codex_zh_injector.py` 顶部 `POLL_INTERVAL` 附近的 9229 端口号 |
+| 客户端调试端口变了 | 改 `codex_zh_injector.py` 顶部 `DEBUG_PORTS` 与 `activate_chatgpt.py` 的 `ARGS` |
 
 ## 背景
 
@@ -66,6 +73,7 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v3.2** — 排查「Codex++ 一键启动失灵」：确认客户端为微软商店 MSIX 包（OpenAI.Codex_26.901.x），普通激活无法传命令行参数导致调试端口不开；新增 `activate_chatgpt.py`（COM `IApplicationActivationManager` 带参激活，保留包身份，避免直接运行 exe 的 GPU 崩溃）+ 桌面 `ChatGPT汉化启动.bat`；适配新版 Chromium 的 CDP WebSocket Origin 校验（403）：启动参数加 `--remote-allow-origins=*`、注入器 websocket 加 `suppress_origin`；注入器改多端口探测（9229/9222/9223/9230/9333）
 - **v3.1** — 修复汉化失效（注入器进程未常驻）：新增 `codex_zh_watchdog.py` 看门狗 + Windows 计划任务 `CodexZhInjectorWatchdog`（每 5 分钟自愈），VBS 与桌面 bat 统一走 watchdog 入口；注入器新增**词表热更新**（脚本 MD5 变化即重新注入，改词条不再需要重启客户端）、单实例保护、UTF-8 日志；词表 650 → 676 条（顶栏 Update → 更新、工具栏与无障碍 aria-label 一批、含变量名标签正则，如「X 的项目操作」）
 - **v3.0** — 修复页面 URL 升级变化导致的 @match 失效（`app://openai-codex` → `app://-`，双规则兼容）；新增独立 CDP 注入器方案（codex_zh_injector.py + 开机自启），脱离 Codex++ 注入机制，升级不受影响
 - **v2.9.14** — 补漏：定时任务自动化输出卡片 4 条（Automation → 自动化 / Automation ID → 自动化 ID / Automation memory → 自动化记忆 / Last run → 上次运行）
