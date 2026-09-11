@@ -81,7 +81,9 @@ def get_page_ws():
 
 
 def cdp_eval(ws_url, expr, timeout=25):
-    ws = websocket.create_connection(ws_url, timeout=timeout)
+    # suppress_origin=True：新版 Chromium 对 CDP WebSocket 做 Origin 校验，
+    # 不带 Origin 头可避免 403（双保险，启动参数 --remote-allow-origins=* 已允许）
+    ws = websocket.create_connection(ws_url, timeout=timeout, suppress_origin=True)
     try:
         ws.send(json.dumps({"id": 1, "method": "Runtime.evaluate",
                             "params": {"expression": expr, "returnByValue": True}}))
