@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Codex简体中文汉化
 // @namespace    http://tampermonkey.net/
-// @version      3.1
-// @description  Codex简体中文汉化补丁（v3.1：补全 Update 按钮与工具栏 aria-label 词条；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
+// @version      3.2
+// @description  Codex简体中文汉化补丁（v3.2：新增 attributes 监听，React 单独改写 aria-label/title 属性时也能即时重新翻译；补充「打开帮助菜单」等无障碍标签；v3.1：补全 Update 按钮与工具栏 aria-label；v3.0：修复升级后页面 URL 从 app://openai-codex 变为 app://-/ 导致 @match 不匹配、脚本失效的问题）
 // @author       BigPizzaV3 (enhanced)
 // @match        app://-/*
 // @match        app://openai-codex/*
@@ -799,7 +799,14 @@
     ["View details", "查看详情"],
     ["See all", "查看全部"],
     ["Show more", "显示更多"],
-    ["Show less", "收起"]
+    ["Show less", "收起"],
+
+    // === v3.2 补全：帮助菜单等无障碍标签 ===
+    ["Open help menu", "打开帮助菜单"],
+    ["Close help menu", "关闭帮助菜单"],
+    ["Help menu", "帮助菜单"],
+    ["Open menu", "打开菜单"],
+    ["Close menu", "关闭菜单"]
   ];
 
   var ATTR_NAMES = ["title", "aria-label", "placeholder", "alt"];
@@ -963,16 +970,37 @@
       return;
     }
     var last = 0;
+    // v3.2：可编辑区域（contenteditable，如输入框 ProseMirror）内部文本必须保护，
+    // 但其**自身属性**（aria-label / title / placeholder）属于 UI 文案，可以安全翻译。
+    // walk() 出于保护会跳过这些元素，这里补扫一遍它们的属性。
+    function scanProtectedAttrs() {
+      var list = document.querySelectorAll(
+        "[contenteditable][aria-label],[contenteditable][title],[contenteditable][placeholder]");
+      for (var i = 0; i < list.length; i++) translateAttributes(list[i]);
+    }
     function scan() {
       walk(document.body);
+      scanProtectedAttrs();
       last = Date.now();
+    }
+    // v3.2：mutation 密集时用 requestAnimationFrame 合并，避免反复全量扫描
+    var scanQueued = false;
+    function scheduleScan() {
+      if (scanQueued) return;
+      scanQueued = true;
+      var raf = window.requestAnimationFrame || function (fn) { setTimeout(fn, 16); };
+      raf(function () { scanQueued = false; scan(); });
     }
     // 立即扫一遍 + 观察 DOM 变化即时响应 + 定时兜底（应对 React 重渲染/动态注入）
     scan();
-    new MutationObserver(scan).observe(document.body, {
+    // v3.2：新增 attributes 监听 —— React 单独改写 aria-label/title 等属性时（不伴随
+    // 子节点变化）也能立即重新翻译；此前这类改动只能等 2 秒定时兜底，容易表现为「漏译」
+    new MutationObserver(scheduleScan).observe(document.body, {
       childList: true,
       subtree: true,
-      characterData: true
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["title", "aria-label", "placeholder", "alt"]
     });
     setInterval(scan, 2000);
   }
