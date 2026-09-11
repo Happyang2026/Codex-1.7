@@ -5,6 +5,7 @@
 //   2) 包装 Tray.prototype.popUpContextMenu / setContextMenu —— 覆盖已缓存的托盘菜单
 //   3) 包装 Menu.prototype.popup、Menu.setApplicationMenu —— 覆盖其它原生菜单
 // 只做「整串精确匹配」，绝不触碰线程标题等项目内容（带 sublabel 的项直接跳过）。
+// v2：修正实参转发（不再显式补 undefined 位置参数），避免主进程弹 JS 错误框。
 // 由 codex_zh_injector.py 自动调用，重开客户端后自动重新应用。
 (function () {
   var TAG = (typeof global.__ZH_MAIN_TAG__ === "string" && global.__ZH_MAIN_TAG__) || "v1";
@@ -214,28 +215,59 @@
   }
   var O = global.__ZH_MAIN_ORIG__;
 
+  function logErr(where, e) {
+    if (!FS) return;
+    try {
+      FS.appendFileSync(LOG, "[" + new Date().toISOString() + "] ERR " + where + ": " +
+        (e && e.message ? e.message : String(e)) + "\n");
+    } catch (_) {}
+  }
+
+  // ！！关键！！
+  // 一律用 apply(self, 实参数组) 原样转发，且先剥掉尾部 undefined。
+  // Electron 原生绑定收到「显式 undefined」的位置参数会抛
+  //   TypeError: Error processing argument at index 1, conversion failure from undefined
+  // 并弹出主进程 JS 错误框（v1 的 popUpContextMenu(menu, pos) 写法就踩了这个坑：
+  // 调用方只传 menu 时我们补了个 undefined 的 position）。
+  function fwd(fn, self, args) {
+    var a = Array.prototype.slice.call(args);
+    while (a.length && a[a.length - 1] === undefined) a.pop();
+    return fn.apply(self, a);
+  }
+
   Menu.buildFromTemplate = function (tpl) {
     var m;
     try { trTemplate(tpl); } catch (e) {}
-    m = O.buildFromTemplate.call(this, tpl);
+    m = fwd(O.buildFromTemplate, this, arguments);
     try { logMenu("build", m); } catch (e) {}
     return m;
   };
-  Menu.prototype.popup = function (opt) {
+  Menu.prototype.popup = function () {
     try { trMenu(this); } catch (e) {}
-    return O.popup.call(this, opt);
+    return fwd(O.popup, this, arguments);
   };
-  Menu.setApplicationMenu = function (menu) {
-    try { trMenu(menu); } catch (e) {}
-    return O.setApplicationMenu.call(this, menu);
+  Menu.setApplicationMenu = function () {
+    try { trMenu(arguments[0]); } catch (e) {}
+    return fwd(O.setApplicationMenu, this, arguments);
   };
-  Tray.prototype.popUpContextMenu = function (menu, pos) {
+  Tray.prototype.popUpContextMenu = function () {
+    var menu = arguments[0];
     try { trMenu(menu); logMenu("show", menu); } catch (e) {}
-    return O.popUpContextMenu.call(this, menu, pos);
+    try {
+      return fwd(O.popUpContextMenu, this, arguments);
+    } catch (e) {
+      logErr("popUpContextMenu", e);
+      // 兜底：带上位置参数失败就只带菜单重试一次，仍然失败则原样抛出
+      if (menu) {
+        try { return O.popUpContextMenu.call(this, menu); }
+        catch (e2) { logErr("popUpContextMenu-retry", e2); }
+      }
+      throw e;
+    }
   };
-  Tray.prototype.setContextMenu = function (menu) {
-    try { trMenu(menu); } catch (e) {}
-    return O.setContextMenu.call(this, menu);
+  Tray.prototype.setContextMenu = function () {
+    try { trMenu(arguments[0]); } catch (e) {}
+    return fwd(O.setContextMenu, this, arguments);
   };
 
   // 已存在的应用菜单就地翻译并重新应用，使菜单栏也变中文
