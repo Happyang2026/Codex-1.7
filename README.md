@@ -2,11 +2,11 @@
 
 Codex 客户端（app://- 或 app://openai-codex）全界面简体中文化用户脚本。
 
-## ⚠️ v3.4 运行机制（2026-09）
+## ⚠️ v3.5 运行机制（2026-09）
 
 Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`，且 **Codex++ 8 月起不再自动注入本地 user_scripts**（脚本逻辑本身仍兼容新版页面，已通过 CDP 验证 692 词条全部生效）。
 
-因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，客户端升级不再受影响；v3.1 补齐常驻可靠性；v3.2 修复启动链路与编码问题；v3.3 修复占位符与推理强度标签；v3.4 补齐模型选择器浮层并**首次实现原生菜单（托盘右键菜单）汉化**：
+因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，客户端升级不再受影响；v3.1 补齐常驻可靠性；v3.2 修复启动链路与编码问题；v3.3 修复占位符与推理强度标签；v3.4 补齐模型选择器浮层并**首次实现原生菜单（托盘右键菜单）汉化**；v3.5 修复 v3.4 原生菜单补丁引入的**主进程 JS 报错弹框**（右键托盘触发）：
 
 1. `codex_zh_injector.py`：常驻进程，每 3 秒通过 ChatGPT 客户端调试端口（127.0.0.1:9229）检测页面，未注入则注入本脚本（UTF-8 经 TextDecoder 正确解码，避免乱码）
    - **注入判据（v3.2）**：以页面上的版本标记 `window.__ZH_INJ_HASH__` 为准，页面刷新/导航后标记丢失即自动重注入；不再依赖页面文本是否已渲染，避免加载早期误判为「未汉化」而反复注入
@@ -22,9 +22,18 @@ Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`
    - 托盘菜单构建时机特殊：Windows 下应用在启动时就把菜单**缓存**（`cachedWindowsTrayMenu`），
      每次右键才 `popUpContextMenu(缓存菜单)` —— 所以必须在 `popUpContextMenu` 这一步翻，其余入口做冗余覆盖
    - **只做整串精确匹配**，且带 `sublabel`（项目名）的线程条目直接跳过，绝不误翻用户内容
+   - **实参转发红线（v3.5）**：`Tray.prototype.popUpContextMenu` 在 Electron 里是 **native 绑定**
+     （不是 JS 包装），收到**显式 `undefined`** 的位置参数会抛
+     `TypeError: Error processing argument at index 1, conversion failure from undefined`，
+     并弹出「A JavaScript error occurred in the main process」错误框。因此所有包装函数一律
+     用 `fn.apply(self, arguments)` **按原实参个数**转发，并先剥掉尾部 `undefined`
+     （v3.4 的 `O.popUpContextMenu.call(this, menu, pos)` 在调用方只传 menu 时补了个 undefined，必崩）。
+     另注：`Menu.prototype.popup` 的 Electron 实现带默认参（`function(e={})`），传 undefined 无害，
+     但为统一仍走同一转发器。
    - 翻译表 125 条 = 官方 zh-CN 原生菜单词条 121 条（人工配对，含浏览器侧栏右键菜单等）+ 手工补的托盘词条
    - 菜单效果会记录到 `%APPDATA%\Codex++\zh_main_menu.log`
-   - 源表见 `native_menu_map.json`，用 `gen_main_patch.py` 重新生成补丁
+   - 源表见 `native_menu_map.json`，用 `gen_main_patch.py` 重新生成补丁；
+     `probe_tray.py` 可在运行中的主进程里做真实调用自检（会短暂弹一次测试菜单，随即自动关闭）
 3. `codex_zh_watchdog.py`：看门狗，探测注入器单实例端口，已退出则拉起。由两种方式调用：
    - 开机自启：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\codex-zh-injector.vbs`（pythonw 静默运行）
    - 计划任务 `CodexZhInjectorWatchdog`：每 5 分钟检查一次并自愈（`schtasks /Run /TN CodexZhInjectorWatchdog` 可手动触发）
@@ -59,6 +68,7 @@ Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`
 | 模型选择器里「Select model / Recommended set of models」是英文 | 该浮层只在打开时渲染；v3.4 已补词条，若仍英文说明脚本未注入 |
 | **托盘右键菜单（Recent / New Chat / Send Feedback / Exit）是英文** | 原生菜单不在网页里，`codex_zh_main_patch.js` 负责；确认 ①启动参数带 `--inspect=9333` ②`zh_injector.log` 有「原生菜单汉化已应用」③看 `zh_main_menu.log` 是否有 show 记录 |
 | 托盘菜单里线程标题被误翻 | 不应发生：带 `sublabel` 的条目会被跳过；若出现请记下标题反馈 |
+| **右键托盘图标弹出「A JavaScript error occurred in the main process」** | v3.4 补丁的实参转发 bug（见上文「实参转发红线」），v3.5 已修；若仍出现，看 `zh_main_menu.log` 里的 `ERR popUpContextMenu` 行定位。补丁按内容 MD5 热更新，**改完不用重启客户端**，注入器 3 秒内自动重应用；若主进程已进入异常态，用桌面 `ChatGPT汉化启动.bat` 重启一次 |
 | 完全无反应 | 查 `zh_injector.log`；确认 9229 端口在监听（`netstat -ano \| findstr 9229`） |
 | 客户端调试端口变了 | 改 `codex_zh_injector.py` 顶部 `DEBUG_PORTS`/`MAIN_DEBUG_PORTS` 与 `activate_chatgpt.py` 的 `ARGS` |
 
@@ -111,6 +121,16 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v3.5** — 修掉 v3.4 原生菜单补丁引入的**主进程崩溃弹框**（右键托盘图标即触发
+  `A JavaScript error occurred in the main process` / `Tray.popUpContextMenu: conversion failure from undefined`）：
+  - ①根因：`Tray.prototype.popUpContextMenu` 在本版 Electron 里是 **native 绑定**，
+    v3.4 包装函数写成 `O.popUpContextMenu.call(this, menu, pos)`，调用方只传 menu 时
+    pos 为 `undefined` 却被**显式**传进原生绑定 → 参数转换失败抛异常 → Electron 弹错误框。
+  - ②修法：新增统一转发器 `fwd()`，用 `fn.apply(self, arguments)` 原样转发并剥掉尾部 `undefined`；
+    `popUpContextMenu` 另加兜底（带位置参数失败则只带菜单重试一次）与 `ERR` 日志落盘。
+  - ③已在运行中的主进程做过**真实调用验证**：临时 Tray 分别以「单实参」「零实参」调用
+    `popUpContextMenu` 均通过，菜单项标签实测已为中文（`最近 / --- / 退出`）。
+  - ④补丁仍是内容 MD5 热更新，本修复**无需重启客户端**即生效（注入器 3 秒内自动重应用）。
 - **v3.4** — 补齐模型选择器浮层，并**首次把原生菜单（托盘右键菜单）也汉化**：
   ①页面侧新增词条（官方 zh 对齐）：`Select model`→选择模型、`Recommended set of models`→推荐模型集、
   `Locked, opens access options`→已锁定，打开访问权限选项、`Consumes usage limits faster`→更快消耗使用额度、
