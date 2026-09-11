@@ -2,27 +2,39 @@
 
 Codex 客户端（app://- 或 app://openai-codex）全界面简体中文化用户脚本。
 
-## ⚠️ v3.3 运行机制（2026-09）
+## ⚠️ v3.4 运行机制（2026-09）
 
-Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`，且 **Codex++ 8 月起不再自动注入本地 user_scripts**（脚本逻辑本身仍兼容新版页面，已通过 CDP 验证 683 词条全部生效）。
+Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`，且 **Codex++ 8 月起不再自动注入本地 user_scripts**（脚本逻辑本身仍兼容新版页面，已通过 CDP 验证 692 词条全部生效）。
 
-因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，客户端升级不再受影响；v3.1 补齐常驻可靠性；v3.2 修复启动链路与编码问题；v3.3 修复输入框占位符与推理强度标签：
+因此 v3.0 起提供**独立注入器**方案，脱离 Codex++ 注入机制，客户端升级不再受影响；v3.1 补齐常驻可靠性；v3.2 修复启动链路与编码问题；v3.3 修复占位符与推理强度标签；v3.4 补齐模型选择器浮层并**首次实现原生菜单（托盘右键菜单）汉化**：
 
 1. `codex_zh_injector.py`：常驻进程，每 3 秒通过 ChatGPT 客户端调试端口（127.0.0.1:9229）检测页面，未注入则注入本脚本（UTF-8 经 TextDecoder 正确解码，避免乱码）
    - **注入判据（v3.2）**：以页面上的版本标记 `window.__ZH_INJ_HASH__` 为准，页面刷新/导航后标记丢失即自动重注入；不再依赖页面文本是否已渲染，避免加载早期误判为「未汉化」而反复注入
    - **词表热更新**：脚本文件内容变化（MD5）时自动重新注入，改词表后无需重启客户端
    - **单实例保护**：占用本地端口 47653，重复启动自动退出
    - **日志**：`%APPDATA%\Codex++\zh_injector.log`
-2. `codex_zh_watchdog.py`：看门狗，探测注入器单实例端口，已退出则拉起。由两种方式调用：
+   - **原生菜单补丁（v3.4）**：同时轮询主进程调试端口（127.0.0.1:9333），按内容 MD5 应用 `codex_zh_main_patch.js`
+2. `codex_zh_main_patch.js`：**原生菜单汉化补丁（v3.4 新增）**。托盘右键菜单、原生上下文菜单由
+   Electron **主进程**用 `Menu.buildFromTemplate` 构建，不在网页 DOM 里，页面脚本永远改不到。
+   本补丁经主进程调试通道（`--inspect=9333`）在运行时包装
+   `Menu.buildFromTemplate` / `Tray.prototype.popUpContextMenu` / `Tray.prototype.setContextMenu` /
+   `Menu.prototype.popup` / `Menu.setApplicationMenu`，把菜单项 label 换成中文。
+   - 托盘菜单构建时机特殊：Windows 下应用在启动时就把菜单**缓存**（`cachedWindowsTrayMenu`），
+     每次右键才 `popUpContextMenu(缓存菜单)` —— 所以必须在 `popUpContextMenu` 这一步翻，其余入口做冗余覆盖
+   - **只做整串精确匹配**，且带 `sublabel`（项目名）的线程条目直接跳过，绝不误翻用户内容
+   - 翻译表 125 条 = 官方 zh-CN 原生菜单词条 121 条（人工配对，含浏览器侧栏右键菜单等）+ 手工补的托盘词条
+   - 菜单效果会记录到 `%APPDATA%\Codex++\zh_main_menu.log`
+   - 源表见 `native_menu_map.json`，用 `gen_main_patch.py` 重新生成补丁
+3. `codex_zh_watchdog.py`：看门狗，探测注入器单实例端口，已退出则拉起。由两种方式调用：
    - 开机自启：`%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\codex-zh-injector.vbs`（pythonw 静默运行）
    - 计划任务 `CodexZhInjectorWatchdog`：每 5 分钟检查一次并自愈（`schtasks /Run /TN CodexZhInjectorWatchdog` 可手动触发）
-3. `activate_chatgpt.py`：**一键启动**。ChatGPT 桌面端为微软商店 MSIX 包（OpenAI.Codex），
+4. `activate_chatgpt.py`：**一键启动**。ChatGPT 桌面端为微软商店 MSIX 包（OpenAI.Codex），
    普通方式激活无法传命令行参数、直接运行 exe 会因包身份丢失导致 GPU 崩溃。本脚本用
    `IApplicationActivationManager::ActivateApplication` 激活，既保留包身份又传入
-   `--remote-debugging-port=9229 --remote-allow-origins=*`。桌面双击 `ChatGPT汉化启动.bat` 即用。
+   `--remote-debugging-port=9229 --remote-allow-origins=* --inspect=9333`。桌面双击 `ChatGPT汉化启动.bat` 即用。
    v3.2 加固：AUMID 自动解析、等旧进程彻底退出后再激活、最多重试 3 轮、写 `zh_launcher.log`。
-4. 手动恢复注入：双击桌面 `Codex汉化注入器.bat`
-5. 运行前提：ChatGPT 客户端需带 `--remote-debugging-port=9229` 启动（用上面的启动器即可）
+5. 手动恢复注入：双击桌面 `Codex汉化注入器.bat`
+6. 运行前提：ChatGPT 客户端需带 `--remote-debugging-port=9229 --inspect=9333` 启动（用上面的启动器即可）
 
 > **📌 编码红线（v3.2 教训）**：`ChatGPT汉化启动.bat`、`Codex汉化注入器.bat`、`codex-zh-injector.vbs`
 > **必须保持 GBK/ANSI 编码**。cmd.exe 与 WScript 在文件无 BOM 时按系统 ANSI 代码页解析，
@@ -43,9 +55,12 @@ Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`
 | 部分词条未翻译 | 确认词表文件已更新（注入器会自动热更新）；仍未生效则看日志 |
 | 改了词表不生效 | 检查 `zh_injector.log` 是否出现「脚本已更新，重新注入」；若日志显示注入成功但界面没变，**刷新一次页面**（旧脚本实例会与新实例抢译，v3.3 起已加单实例接管，刷新可清掉改造前遗留的老实例） |
 | 输入框占位提示是英文 | 占位文字来自 `data-placeholder` 属性 + CSS `attr()`，且 ProseMirror 会回滚外部改动；v3.3 已改为拦截 `setAttribute`，若仍出现说明脚本未注入 |
-| 推理强度显示成「浅色」 | 上下文识别失效（"Light" 撞上主题词条）；v3.3 改为按 `data-composer-navigation-target="reasoning"` 等属性判定 |
+| 推理强度显示成「浅色」 | 上下文识别失效（"Light" 撞上主题词条）；v3.3 起按 `data-composer-navigation-target="reasoning"` 等属性判定，v3.4 追加按组件类名（`ViewPanel`/`EffortLabel` 等）识别——强度面板是经 portal 挂到 body 的，只能靠类名 |
+| 模型选择器里「Select model / Recommended set of models」是英文 | 该浮层只在打开时渲染；v3.4 已补词条，若仍英文说明脚本未注入 |
+| **托盘右键菜单（Recent / New Chat / Send Feedback / Exit）是英文** | 原生菜单不在网页里，`codex_zh_main_patch.js` 负责；确认 ①启动参数带 `--inspect=9333` ②`zh_injector.log` 有「原生菜单汉化已应用」③看 `zh_main_menu.log` 是否有 show 记录 |
+| 托盘菜单里线程标题被误翻 | 不应发生：带 `sublabel` 的条目会被跳过；若出现请记下标题反馈 |
 | 完全无反应 | 查 `zh_injector.log`；确认 9229 端口在监听（`netstat -ano \| findstr 9229`） |
-| 客户端调试端口变了 | 改 `codex_zh_injector.py` 顶部 `DEBUG_PORTS` 与 `activate_chatgpt.py` 的 `ARGS` |
+| 客户端调试端口变了 | 改 `codex_zh_injector.py` 顶部 `DEBUG_PORTS`/`MAIN_DEBUG_PORTS` 与 `activate_chatgpt.py` 的 `ARGS` |
 
 ### 官方中文词条参考（校对用）
 
@@ -64,7 +79,7 @@ Codex 客户端升级后页面 URL 从 `app://openai-codex/*` 变为 `app://-/*`
 
 Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉化.user.js` v1.0）存在致命 bug：使用了不存在的 API `document.createObserver`，导致脚本一启动即抛 `TypeError`，完全无法生效；且词表仅 10 条，覆盖不足。
 
-本项目为**修复 + 增强版**（现 v3.3）：
+本项目为**修复 + 增强版**（现 v3.4）：
 
 - 修复 `document.createObserver` 崩溃 bug，改用标准 `new MutationObserver`
 - 词表 676 条，覆盖侧边栏 / 主面板 / 新建项目 / 插件 / 文档 / 帮助 / 运行环境 / 内置浏览器 / 推理强度选择器 / 设置页 / 键盘快捷键页 / 定时任务 / 工具栏等
@@ -96,6 +111,18 @@ Codex++ 脚本市场中的原版「Codex简体中文汉化」脚本（`zh_CN汉�
 
 ## 版本历史
 
+- **v3.4** — 补齐模型选择器浮层，并**首次把原生菜单（托盘右键菜单）也汉化**：
+  ①页面侧新增词条（官方 zh 对齐）：`Select model`→选择模型、`Recommended set of models`→推荐模型集、
+  `Locked, opens access options`→已锁定，打开访问权限选项、`Consumes usage limits faster`→更快消耗使用额度、
+  左右方向键调整强度，以及 react-beautiful-dnd 的拖拽读屏提示；词表 683 → 692 条。
+  ②**推理强度档位改为完全对齐 Codex 官方中文**：无 / 极低 / **轻度**（原「低」）/ 中 / 高 / 极高 / 最高 / Ultra / 持续。
+  ③修掉「浅色」残留：强度面板经 React portal 挂到 body，祖先链里没有 composer 的属性，
+  改为按组件类名（`ViewPanel`/`ViewTrack`/`ViewControls`/`EffortLabel` 等）识别上下文。
+  ④强度滑块读屏播报按官方模板 `{value}，第 {position} 项，共 {total} 项。` 生成为「自定义 轻度，第 2 项，共 6 项。」。
+  ⑤**原生菜单汉化（新机制）**：新增 `codex_zh_main_patch.js` + 启动参数 `--inspect=9333`，
+  注入器自动经主进程调试通道包装 `Menu.buildFromTemplate` / `Tray.prototype.popUpContextMenu` 等入口，
+  把托盘右键菜单（Recent / Running / Unread / Pinned / Usage / More / New Chat / Send Feedback / Exit）
+  与原生上下文菜单翻成中文；带 `sublabel` 的线程条目不翻，绝不误伤用户内容
 - **v3.3** — 修复两处漏译/误译，并解决三个隐藏机制问题：
   - ①**输入框占位符漏译**：「Work with ChatGPT」不在文本节点里，而是
     `<p class="placeholder" data-placeholder="Work with ChatGPT">`，真正的字由
